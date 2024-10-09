@@ -1,0 +1,15 @@
+[submodule "Packages/com.nonsensicallab.nonsensicalkit.core"]
+	path = Packages/com.nonsensicallab.nonsensicalkit.core
+	url = https://github.com/NonsensicalLab/NonsensicalKit.Core.git
+[submodule "Packages/com.nonsensicallab.nonsensicalkit.ugui"]
+	path = Packages/com.nonsensicallab.nonsensicalkit.ugui
+	url = https://github.com/NonsensicalLab/NonsensicalKit.UGUI.git
+[submodule "Packages/com.nonsensicallab.nonsensicalkit.webgl"]
+	path = Packages/com.nonsensicallab.nonsensicalkit.webgl
+	url = https://github.com/NonsensicalLab/NonsensicalKit.WebGL.git
+[submodule "Packages/com.nonsensicallab.nonsensicalkit.digitaltwin"]
+	path = Packages/com.nonsensicallab.nonsensicalkit.digitaltwin
+	url = https://github.com/NonsensicalLab/NonsensicalKit.DigitalTwin.git
+[submodule "Packages/com.nonsensicallab.nonsensicalkit.simulation"]
+	path = Packages/com.nonsensicallab.nonsensicalkit.simulation
+	url = https://github.com/NonsensicalLab/NonsensicalKit.Simulation.git
