@@ -1,5 +1,6 @@
 {
     "name": "UniTask.DOTween",
+    "rootNamespace": "",
     "references": [
         "UniTask",
         "DOTween.Modules"

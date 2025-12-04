@@ -15,3 +15,4 @@ MonoBehaviour:
   m_runningLogger: DefaultLog
   m_runningServices:
   - MqttService
+  - ConfigService
