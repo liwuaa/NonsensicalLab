@@ -671,7 +671,7 @@ MonoBehaviour:
   m_OnResize:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 241498999864082770}
         m_TargetAssemblyTypeName: MiniMapManager, Assembly-CSharp
         m_MethodName: OnWindowSizeUpdate
         m_Mode: 0
