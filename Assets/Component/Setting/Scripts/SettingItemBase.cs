@@ -12,15 +12,15 @@ public abstract class SettingItemBase : NonsensicalMono
     {
         foreach (var key in m_settingKeys)
         {
-            Subscribe<object, SettingItem>("OnSettingValueChanged", key, OnSettingValueChanged);
+            Subscribe<string ,object, SettingItem>("OnSettingValueChanged", key, OnSettingValueChanged);
         }
 
         foreach (var action in m_addlistenButtonActions)
         {
-            Subscribe<string>("OnAddListenButtonClick", action, OnAddListenButtonClick);
+            Subscribe<string>("OnSettingButtonCLick", action, OnAddListenButtonClick);
         }
     }
 
-    protected abstract void OnSettingValueChanged(object value, SettingItem value2);
+    protected abstract void OnSettingValueChanged(string key,object value, SettingItem value2);
     protected abstract void OnAddListenButtonClick(string actionKey);
 }

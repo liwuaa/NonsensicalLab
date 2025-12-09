@@ -2,6 +2,9 @@ using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using NonsensicalKit.Core;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
 
 public class RuntimeSettingsManager : MonoBehaviour
@@ -12,7 +15,6 @@ public class RuntimeSettingsManager : MonoBehaviour
     private string defaultSettingsResourceName = "settings_default"; // Resources 文件夹下的默认设置文件名 (不含扩展名)
 
     [SerializeField] private string userSettingsFileName = "user_settings.json"; // 用户设置文件名
-
 
     private static RuntimeSettingsManager _instance;
 
@@ -41,12 +43,23 @@ public class RuntimeSettingsManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        foreach (var item in _settingsDict)
+        {
+            if (item.Value.InternalType != SettingItemTypeInternal.Button)
+            {
+                IOCC.PublishWithID("OnSettingValueChanged", item.Key, item.Key,(object)item.Value.value, item.Value);
+            }
+        }
+    }
+
     private void LoadSettings()
     {
         string jsonData = null;
         bool loadedFromFile = false;
 
-        // 1. 首先尝试从 persistentDataPath 加载用户设置
+        // 尝试从 persistentDataPath 加载用户设置
         if (File.Exists(UserSettingsFilePath))
         {
             try
@@ -61,7 +74,7 @@ public class RuntimeSettingsManager : MonoBehaviour
             }
         }
 
-        // 2. 如果没有用户设置文件，则加载默认设置
+        //如果没有用户设置文件，则加载默认设置
         if (string.IsNullOrEmpty(jsonData))
         {
             TextAsset textAsset = Resources.Load<TextAsset>(defaultSettingsResourceName);
@@ -73,7 +86,7 @@ public class RuntimeSettingsManager : MonoBehaviour
             else
             {
                 Debug.LogError($"Default settings file 'Resources/{defaultSettingsResourceName}.json' not found!");
-                return; // 无法加载任何设置
+                return;
             }
         }
 
@@ -91,7 +104,7 @@ public class RuntimeSettingsManager : MonoBehaviour
             }
         }
 
-        // 4. 将列表转换为字典以便快速查找，并初始化内部状态
+        // 将列表转换为字典以便快速查找，并初始化内部状态
         _settingsDict.Clear();
         if (_settingsDataWrapper is { Count: > 0 })
         {
@@ -118,7 +131,7 @@ public class RuntimeSettingsManager : MonoBehaviour
                 _settingsDict[item.key] = item;
             }
         }
-        
+
         if (!loadedFromFile && _settingsDataWrapper != null)
         {
             SaveSettings();
@@ -252,7 +265,6 @@ public class RuntimeSettingsManager : MonoBehaviour
                     break;
             }
 
-            // 如果值改变了，则自动保存
             if (valueChanged)
             {
                 if (_settingsTempDict.TryAdd(key, (value, item)) == false)
@@ -281,13 +293,27 @@ public class RuntimeSettingsManager : MonoBehaviour
                 Debug.Log("Apply settings...");
                 foreach (var item in _settingsTempDict)
                 {
-                    IOCC.PublishWithID("OnSettingValueChanged", item.Key, item.Value.Item1, item.Value.Item2);
+                    IOCC.PublishWithID("OnSettingValueChanged", item.Key, item.Key, item.Value.Item1, item.Value.Item2);
                 }
+
                 _settingsTempDict.Clear();
                 SaveSettings();
                 break;
             case "cancel":
                 _settingsTempDict.Clear();
+                break;
+            case "exitApplication":
+                if (Application.isEditor)
+                {
+#if UNITY_EDITOR
+                    EditorApplication.isPlaying = false;
+#endif
+                }
+                else
+                {
+                    Application.Quit();
+                }
+
                 break;
             default:
                 IOCC.PublishWithID("OnSettingButtonCLick", actionKey, actionKey);
@@ -311,6 +337,7 @@ public class RuntimeSettingsManager : MonoBehaviour
                 Debug.LogError($"Failed to delete user settings file: {e.Message}");
             }
         }
+
         LoadSettings();
     }
 }
