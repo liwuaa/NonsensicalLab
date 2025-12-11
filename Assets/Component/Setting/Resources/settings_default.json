@@ -4,11 +4,7 @@
         "type": "string",
         "label": "帧率设置",
         "description": "调整程序运行帧率 (0-120)",
-        "value": 60,
-        "range": {
-            "I1": 0,
-            "I2": 120
-        }
+        "value": 60
     },
     {
         "key": "showFPS",
@@ -24,10 +20,10 @@
         "description": "选择游戏图形质量",
         "value": "中",
         "options": [
+            "极低",
             "低",
             "中",
-            "高",
-            "极高"
+            "高"
         ]
     },
     {

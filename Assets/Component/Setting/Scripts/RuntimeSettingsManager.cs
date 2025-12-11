@@ -1,5 +1,6 @@
 using System.IO;
 using System.Collections.Generic;
+using Core.Service.SettingService.GUISetting;
 using Newtonsoft.Json;
 using NonsensicalKit.Core;
 #if UNITY_EDITOR
@@ -24,9 +25,9 @@ public class RuntimeSettingsManager : MonoBehaviour
     }
 
 
-    private List<SettingItem> _settingsDataWrapper = new();
-    private Dictionary<string, SettingItem> _settingsDict = new Dictionary<string, SettingItem>();
-    private Dictionary<string, (object, SettingItem)> _settingsTempDict = new();
+    private List<GUISettingItem> _settingsDataWrapper = new();
+    private Dictionary<string, GUISettingItem> _settingsDict = new Dictionary<string, GUISettingItem>();
+    private Dictionary<string, (object, GUISettingItem)> _settingsTempDict = new();
     private string UserSettingsFilePath => Path.Combine(Application.persistentDataPath, userSettingsFileName);
 
     private void Awake()
@@ -49,7 +50,7 @@ public class RuntimeSettingsManager : MonoBehaviour
         {
             if (item.Value.InternalType != SettingItemTypeInternal.Button)
             {
-                IOCC.PublishWithID("OnSettingValueChanged", item.Key, item.Key,(object)item.Value.value, item.Value);
+                IOCC.PublishWithID("OnSettingValueChanged", item.Key, item.Key, (object)item.Value.value, item.Value);
             }
         }
     }
@@ -95,7 +96,7 @@ public class RuntimeSettingsManager : MonoBehaviour
             try
             {
                 if (m_log) Debug.Log(jsonData);
-                _settingsDataWrapper = JsonConvert.DeserializeObject<List<SettingItem>>(jsonData);
+                _settingsDataWrapper = JsonConvert.DeserializeObject<List<GUISettingItem>>(jsonData);
             }
             catch (System.Exception e)
             {
@@ -161,9 +162,9 @@ public class RuntimeSettingsManager : MonoBehaviour
             try
             {
                 // 更新
-                foreach (SettingItem item in _settingsDataWrapper)
+                foreach (GUISettingItem item in _settingsDataWrapper)
                 {
-                    item.value = item.GetJsonValue()?.ToString();
+                    item.value = item.GetCacheValue()?.ToString();
                 }
 
                 var a = JsonConvert.SerializeObject(_settingsDataWrapper);
@@ -177,7 +178,7 @@ public class RuntimeSettingsManager : MonoBehaviour
         }
     }
 
-    public List<SettingItem> GetSettingsDataWrapper() // 返回包装类
+    public List<GUISettingItem> GetSettingsDataWrapper() // 返回包装类
     {
         return _settingsDataWrapper;
     }
@@ -185,7 +186,7 @@ public class RuntimeSettingsManager : MonoBehaviour
     // 设置值的方法 (主要用于非按钮类型)
     public void SetValue(string key, object value)
     {
-        if (_settingsDict.TryGetValue(key, out SettingItem item))
+        if (_settingsDict.TryGetValue(key, out GUISettingItem item))
         {
             bool valueChanged = false;
             switch (item.InternalType)
@@ -247,13 +248,12 @@ public class RuntimeSettingsManager : MonoBehaviour
                     else if (value is string enumStrVal)
                     {
                         int index = item.options.IndexOf(enumStrVal);
-                        if (index != -1 && item.stringValue != enumStrVal)
+
+                        if (index != -1)
                         {
-                            item.stringValue = enumStrVal;
-                            item.SelectedOptionIndex = index;
                             valueChanged = true;
                         }
-                        else if (index == -1)
+                        else
                         {
                             Debug.LogWarning($"Attempted to set invalid enum value '{enumStrVal}' for key '{key}'. Valid options: {string.Join(", ", item.options)}");
                         }
@@ -340,4 +340,6 @@ public class RuntimeSettingsManager : MonoBehaviour
 
         LoadSettings();
     }
+    
+    
 }

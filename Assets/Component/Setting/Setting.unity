@@ -155,6 +155,7 @@ MonoBehaviour:
   m_settingKeys:
   - targetFrameRate
   - showFPS
+  - graphicsQuality
   m_addlistenButtonActions:
   - hideObj
   m_text: {fileID: 1226654370}
@@ -278,7 +279,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 60881979}
-  - component: {fileID: 60881978}
   - component: {fileID: 60881977}
   m_Layer: 0
   m_Name: SettingManger
@@ -286,7 +286,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &60881977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -302,28 +302,6 @@ MonoBehaviour:
   m_log: 0
   defaultSettingsResourceName: settings_default
   userSettingsFileName: user_settings.json
---- !u!114 &60881978
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 60881976}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c24e21f23d144bb4db5b5ffdda400b1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_toggleKey: 282
-  m_usePercentage: 1
-  m_windowHeightPercentage: 0.8
-  m_windowRect:
-    serializedVersion: 2
-    x: 50
-    y: 50
-    width: 400
-    height: 600
-  settingsManager: {fileID: 60881977}
 --- !u!4 &60881979
 Transform:
   m_ObjectHideFlags: 0

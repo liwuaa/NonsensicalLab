@@ -8,7 +8,7 @@
     },
     {
         "key": "targetFrameRate",
-        "type": "string",
+        "type": "float",
         "label": "帧率设置",
         "description": "调整程序运行帧率 (0-120)",
         "value": 60,

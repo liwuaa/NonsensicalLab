@@ -96,3 +96,5 @@ Gen/
 AssetBundles/
 CodeCoverage/
 Assets/Temp.meta
+Assets/Samples/*
+Assets/Samples.meta

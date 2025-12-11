@@ -16,3 +16,4 @@ MonoBehaviour:
   m_runningServices:
   - MqttService
   - ConfigService
+  - SettingService
