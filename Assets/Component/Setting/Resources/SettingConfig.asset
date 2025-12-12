@@ -21,8 +21,6 @@ MonoBehaviour:
       InitialValue: false
     - Name: graphicsQuality
       InitialValue: "\u4E2D"
-    - Name: soundVolume
-      InitialValue: 0.8
     m_UseGUISetting: 1
     guiPanelConfig:
       m_ToggleKey: 284

@@ -43,7 +43,7 @@
       "dependencies": {}
     },
     "com.nonsensicallab.pluginresources": {
-      "version": "file:com.nonsensicallab.pluginresources",
+      "version": "file:com.liwuaa.pluginresources",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
