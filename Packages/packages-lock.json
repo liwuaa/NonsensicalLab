@@ -43,10 +43,11 @@
       "dependencies": {}
     },
     "com.nonsensicallab.pluginresources": {
-      "version": "file:com.liwuaa.pluginresources",
+      "version": "https://github.com/liwuaa/PluginResources.git",
       "depth": 0,
-      "source": "embedded",
-      "dependencies": {}
+      "source": "git",
+      "dependencies": {},
+      "hash": "0d4af5cd5736d03569e6c5d5629119638ab1386c"
     },
     "com.unity.cinemachine": {
       "version": "2.8.9",
