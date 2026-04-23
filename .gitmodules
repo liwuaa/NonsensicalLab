@@ -13,3 +13,6 @@
 [submodule "Packages/com.nonsensicallab.nonsensicalkit.simulation"]
 	path = Packages/com.nonsensicallab.nonsensicalkit.simulation
 	url = https://github.com/NonsensicalLab/NonsensicalKit.Simulation.git
+[submodule "Assets/NonsensicalSamples"]
+	path = Assets/NonsensicalSamples
+	url = https://github.com/NonsensicalHub/NonsensicalSamples.git

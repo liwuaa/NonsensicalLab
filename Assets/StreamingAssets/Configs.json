@@ -1,0 +1,51 @@
+[
+  {
+    "m_Items": [
+      {
+        "Name": "targetFrameRate",
+        "InitialValue": "60"
+      },
+      {
+        "Name": "showFPS",
+        "InitialValue": "false"
+      },
+      {
+        "Name": "graphicsQuality",
+        "InitialValue": "中"
+      },
+      {
+        "Name": "soundVolume",
+        "InitialValue": "0.8"
+      }
+    ],
+    "m_UseGUISetting": true,
+    "guiPanelConfig": {
+      "m_ToggleKey": 284,
+      "m_GuiSkinPath": "GUISkin",
+      "m_UsePercentage": true,
+      "m_WindowHeightPercentage": 0.8,
+      "m_X": 50.0,
+      "m_Y": 50.0,
+      "m_W": 400.0,
+      "m_H": 600.0
+    },
+    "GUISettingTemplate": "[\r\n    {\r\n        \"key\": \"targetFrameRate\",\r\n        \"type\": \"string\",\r\n        \"label\": \"帧率设置\",\r\n        \"description\": \"调整程序运行帧率 (0-120)\",\r\n        \"value\": 60\n    },\r\n    {\r\n        \"key\": \"showFPS\",\r\n        \"type\": \"bool\",\r\n        \"label\": \"显示FPS\",\r\n        \"description\": \"在屏幕上显示帧率信息\",\r\n        \"value\": false\r\n    },\r\n    {\r\n        \"key\": \"graphicsQuality\",\r\n        \"type\": \"enum\",\r\n        \"label\": \"图形质量\",\r\n        \"description\": \"选择游戏图形质量\",\r\n        \"value\": \"中\",\r\n        \"options\": [\r\n            \"极低\",\r\n            \"低\",\r\n            \"中\",\r\n            \"高\"\r\n        ]\r\n    },\n    {\r\n        \"key\": \"resetSettings\",\r\n        \"type\": \"button\",\r\n        \"label\": \"重置设置\",\r\n        \"description\": \"将所有设置恢复到默认值\",\r\n        \"buttonAction\": \"resetSettings\"\r\n    },\r\n    {\r\n        \"key\": \"hideObj\",\r\n        \"type\": \"button\",\r\n        \"label\": \"隐藏测试物体\",\r\n        \"description\": \"隐藏测试物体\",\r\n        \"buttonAction\": \"hideObj\"\r\n    },\r\n    {\r\n        \"key\": \"exitApplication\",\r\n        \"type\": \"button\",\r\n        \"label\": \"退出程序\",\r\n        \"description\": \"退出程序\",\r\n        \"buttonAction\": \"exitApplication\"\r\n    }\r\n]",
+    "ConfigID": "IDab794780"
+  },
+  {
+    "m_Items": [],
+    "m_UseGUISetting": true,
+    "guiPanelConfig": {
+      "m_ToggleKey": 282,
+      "m_GuiSkinPath": "",
+      "m_UsePercentage": true,
+      "m_WindowHeightPercentage": 0.8,
+      "m_X": 50.0,
+      "m_Y": 50.0,
+      "m_W": 400.0,
+      "m_H": 600.0
+    },
+    "GUISettingTemplate": "[{\"key\":\"targetFrameRate\",\"type\":\"string\",\"label\":\"帧率设置\",\"description\":\"调整程序运行帧率 (0-120)\",\"value\":60,\"range\":{\"I1\":0,\"I2\":120}},{\"key\":\"showFPS\",\"type\":\"bool\",\"label\":\"显示FPS\",\"description\":\"在屏幕上显示帧率信息\",\"value\":false},{\"key\":\"graphicsQuality\",\"type\":\"enum\",\"label\":\"图形质量\",\"description\":\"选择游戏图形质量\",\"value\":\"中\",\"options\":[\"极低\",\"低\",\"中\",\"高\"]},{\"key\":\"resetSettings\",\"type\":\"button\",\"label\":\"重置设置\",\"description\":\"将所有设置恢复到默认值\",\"buttonAction\":\"resetSettings\"},{\"key\":\"exitApplication\",\"type\":\"button\",\"label\":\"退出程序\",\"description\":\"退出程序\",\"buttonAction\":\"exitApplication\"}]",
+    "ConfigID": "ID12de3770"
+  }
+]

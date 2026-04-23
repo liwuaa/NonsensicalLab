@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ecce03167649141bbe23317be4c52f, type: 3}
+  m_Name: SettingConfig
+  m_EditorClassIdentifier: 
+  m_config:
+    ConfigID: ID12de3770
+    m_Items: []
+    m_UseGUISetting: 1
+    guiPanelConfig:
+      m_ToggleKey: 282
+      m_CustomSkin: {fileID: 0}
+      m_GuiSkinPath: 
+      m_UsePercentage: 1
+      m_WindowHeightPercentage: 0.8
+      m_X: 50
+      m_Y: 50
+      m_W: 400
+      m_H: 600
+    GUISettingTemplate: "[{\"key\":\"targetFrameRate\",\"type\":\"string\",\"label\":\"\u5E27\u7387\u8BBE\u7F6E\",\"description\":\"\u8C03\u6574\u7A0B\u5E8F\u8FD0\u884C\u5E27\u7387
+      (0-120)\",\"value\":60,\"range\":{\"I1\":0,\"I2\":120}},{\"key\":\"showFPS\",\"type\":\"bool\",\"label\":\"\u663E\u793AFPS\",\"description\":\"\u5728\u5C4F\u5E55\u4E0A\u663E\u793A\u5E27\u7387\u4FE1\u606F\",\"value\":false},{\"key\":\"graphicsQuality\",\"type\":\"enum\",\"label\":\"\u56FE\u5F62\u8D28\u91CF\",\"description\":\"\u9009\u62E9\u6E38\u620F\u56FE\u5F62\u8D28\u91CF\",\"value\":\"\u4E2D\",\"options\":[\"\u6781\u4F4E\",\"\u4F4E\",\"\u4E2D\",\"\u9AD8\"]},{\"key\":\"resetSettings\",\"type\":\"button\",\"label\":\"\u91CD\u7F6E\u8BBE\u7F6E\",\"description\":\"\u5C06\u6240\u6709\u8BBE\u7F6E\u6062\u590D\u5230\u9ED8\u8BA4\u503C\",\"buttonAction\":\"resetSettings\"},{\"key\":\"exitApplication\",\"type\":\"button\",\"label\":\"\u9000\u51FA\u7A0B\u5E8F\",\"description\":\"\u9000\u51FA\u7A0B\u5E8F\",\"buttonAction\":\"exitApplication\"}]"

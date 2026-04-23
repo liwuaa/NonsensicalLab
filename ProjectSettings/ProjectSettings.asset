@@ -347,7 +347,9 @@ PlayerSettings:
   openGLRequireES32: 0
   m_TemplateCustomTags:
     SHOW_FULL_SCREEN_BUTTON: 
+    USE_REMOTE_INPUT: 1
     Use_File_Selector: 1
+    Use_Iframe: 
     Use_MQTT: 
     Use_SocketIO: 
   mobileMTRendering:
@@ -613,7 +615,7 @@ PlayerSettings:
   webGLDebugSymbols: 0
   webGLEmscriptenArgs: 
   webGLModulesDirectory: 
-  webGLTemplate: APPLICATION:Default
+  webGLTemplate: PROJECT:NonsensicalTemplate
   webGLAnalyzeBuildSize: 0
   webGLUseEmbeddedResources: 0
   webGLCompressionFormat: 1

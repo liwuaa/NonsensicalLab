@@ -48,4 +48,5 @@ MonoBehaviour:
   m_jsonMode: 1
   m_singleJsonMode: 1
   m_configDatas:
-  - {fileID: 11400000, guid: 00ac14695806877448b23dbaf9002f5c, type: 2}
+  - {fileID: 11400000, guid: 16f563c34a6b74a4db4f8b78983dd6ad, type: 2}
+  - {fileID: 11400000, guid: be21c5960f367ed4fa58450d8edd8755, type: 2}

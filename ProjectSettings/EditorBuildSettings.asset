@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MQTT.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Project/RemoteInput/RemoteInput.unity
+    guid: 8330b59f5437e2c408b9a941e40b737a
   m_configObjects: {}
