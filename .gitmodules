@@ -16,3 +16,6 @@
 [submodule "Assets/NonsensicalSamples"]
 	path = Assets/NonsensicalSamples
 	url = https://github.com/NonsensicalHub/NonsensicalSamples.git
+[submodule "Packages/com.nonsensicallab.pluginresources"]
+	path = Packages/com.nonsensicallab.pluginresources
+	url = https://github.com/liwuaa/PluginResources.git
