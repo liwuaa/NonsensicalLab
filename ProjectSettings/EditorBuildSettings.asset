@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/NonsensicalSamples/NonsensicalKit.Simulation/RemoteInput/RemoteInput.unity
-    guid: 8330b59f5437e2c408b9a941e40b737a
+    path: Assets/NonsensicalSamples/NonsensicalKit.DigitalTwin/Warehouse/WarehouseTest.unity
+    guid: 67064d58036a07142bf46d3d0bfbc025
   m_configObjects: {}

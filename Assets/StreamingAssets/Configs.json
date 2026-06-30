@@ -33,6 +33,23 @@
     "ConfigID": "IDab794780"
   },
   {
+    "Icons": [
+      {
+        "Type": "Player",
+        "Path": "ICON/playerIcon"
+      },
+      {
+        "Type": "Point",
+        "Path": "ICON/point"
+      },
+      {
+        "Type": "Measure",
+        "Path": "ICON/MeasureArea"
+      }
+    ],
+    "ConfigID": "ID6a59c5cb"
+  },
+  {
     "m_Items": [],
     "m_UseGUISetting": true,
     "guiPanelConfig": {
