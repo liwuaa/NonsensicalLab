@@ -16,3 +16,6 @@ MonoBehaviour:
   m_runningServices:
   - MqttService
   - ConfigService
+  - DagLogicManager
+  - SelfTimer
+  - DigitalTwinUIManager

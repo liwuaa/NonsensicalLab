@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEditor;
 #endif
 
-public class Demo : MonoBehaviour {
+public class IKDemo : MonoBehaviour {
 
 	public BioIK.BioIK[] Models;
 
@@ -55,13 +55,13 @@ public class Demo : MonoBehaviour {
 }
 
 #if UNITY_EDITOR
-[CustomEditor(typeof(Demo))]
+[CustomEditor(typeof(IKDemo))]
 public class DemoEditor : Editor {
 
-	public Demo Target;
+	public IKDemo Target;
 
 	void Awake() {
-		Target = (Demo)target;
+		Target = (IKDemo)target;
 	}
 
 	public override void OnInspectorGUI() {
