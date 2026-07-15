@@ -1,0 +1,17 @@
+---
+description: Unity 自建 Canvas 的缩放与参考分辨率约定
+alwaysApply: true
+---
+
+# Unity Canvas 默认配置
+
+在 Unity 中**自行创建 Canvas**（非复用已有 Prefab）时，必须按以下设置 `Canvas Scaler`：
+
+| 属性 | 值 |
+|------|-----|
+| UI Scale Mode | **Scale With Screen Size** |
+| Reference Resolution | **1920 × 1080** |
+| Screen Match Mode | Match Width Or Height |
+| Match | **0.618** |
+
+无需在每次任务中重复说明；创建或生成 UI 时默认应用上述配置。
