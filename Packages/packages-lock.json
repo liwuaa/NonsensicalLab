@@ -42,7 +42,9 @@
       "version": "file:com.nonsensicallab.nonsensicalkit.ugui",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
+      "dependencies": {
+        "com.nonsensicallab.nonsensicalkit.core": "1.0.7"
+      }
     },
     "com.nonsensicallab.nonsensicalkit.webgl": {
       "version": "file:com.nonsensicallab.nonsensicalkit.webgl",
