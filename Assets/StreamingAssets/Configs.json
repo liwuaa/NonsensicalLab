@@ -1,35 +1,17 @@
 [
   {
-    "m_Items": [
-      {
-        "Name": "targetFrameRate",
-        "InitialValue": "60"
-      },
-      {
-        "Name": "showFPS",
-        "InitialValue": "false"
-      },
-      {
-        "Name": "graphicsQuality",
-        "InitialValue": "中"
-      },
-      {
-        "Name": "soundVolume",
-        "InitialValue": "0.8"
-      }
-    ],
-    "m_UseGUISetting": true,
-    "guiPanelConfig": {
-      "m_ToggleKey": 284,
-      "m_GuiSkinPath": "GUISkin",
+    "m_UseSettingPanel": true,
+    "m_Panel": {
+      "m_ToggleKey": 282,
+      "m_X": 80.0,
+      "m_Y": 60.0,
+      "m_W": 920.0,
+      "m_H": 620.0,
       "m_UsePercentage": true,
-      "m_WindowHeightPercentage": 0.8,
-      "m_X": 50.0,
-      "m_Y": 50.0,
-      "m_W": 400.0,
-      "m_H": 600.0
+      "m_WindowHeightPercentage": 0.82,
+      "m_ShowAdvancedByDefault": false
     },
-    "GUISettingTemplate": "[\r\n    {\r\n        \"key\": \"targetFrameRate\",\r\n        \"type\": \"string\",\r\n        \"label\": \"帧率设置\",\r\n        \"description\": \"调整程序运行帧率 (0-120)\",\r\n        \"value\": 60\n    },\r\n    {\r\n        \"key\": \"showFPS\",\r\n        \"type\": \"bool\",\r\n        \"label\": \"显示FPS\",\r\n        \"description\": \"在屏幕上显示帧率信息\",\r\n        \"value\": false\r\n    },\r\n    {\r\n        \"key\": \"graphicsQuality\",\r\n        \"type\": \"enum\",\r\n        \"label\": \"图形质量\",\r\n        \"description\": \"选择游戏图形质量\",\r\n        \"value\": \"中\",\r\n        \"options\": [\r\n            \"极低\",\r\n            \"低\",\r\n            \"中\",\r\n            \"高\"\r\n        ]\r\n    },\n    {\r\n        \"key\": \"resetSettings\",\r\n        \"type\": \"button\",\r\n        \"label\": \"重置设置\",\r\n        \"description\": \"将所有设置恢复到默认值\",\r\n        \"buttonAction\": \"resetSettings\"\r\n    },\r\n    {\r\n        \"key\": \"hideObj\",\r\n        \"type\": \"button\",\r\n        \"label\": \"隐藏测试物体\",\r\n        \"description\": \"隐藏测试物体\",\r\n        \"buttonAction\": \"hideObj\"\r\n    },\r\n    {\r\n        \"key\": \"exitApplication\",\r\n        \"type\": \"button\",\r\n        \"label\": \"退出程序\",\r\n        \"description\": \"退出程序\",\r\n        \"buttonAction\": \"exitApplication\"\r\n    }\r\n]",
+    "m_SettingJson": "{\r\n  \"version\": 2,\r\n  \"system\": {\r\n    \"enabled\": true,\r\n    \"advanced\": true,\r\n    \"include\": [\"display\", \"quality\", \"audio\", \"performance\"]\r\n  },\r\n  \"tabs\": [\r\n    {\r\n      \"id\": \"project.demo\",\r\n      \"label\": \"项目示例\",\r\n      \"order\": 100,\r\n      \"kind\": \"project\",\r\n      \"groups\": [\r\n        {\r\n          \"id\": \"look\",\r\n          \"label\": \"外观\",\r\n          \"description\": \"改完后点底部「应用」。中间方块会马上变。\",\r\n          \"items\": [\r\n            {\r\n              \"type\": \"info\",\r\n              \"key\": \"project.help\",\r\n              \"label\": \"怎么看效果\",\r\n              \"description\": \"阴影距离看右侧由近到远的方块影子。阴影质量看近处影子硬软。LOD 偏移看左侧模型从圆球换成方块。各向异性过滤看地面斜向格子。主音量听循环提示音。渲染比例会让整屏变糊或变清晰。\"\r\n            },\r\n            {\r\n              \"key\": \"project.color\",\r\n              \"type\": \"enum\",\r\n              \"label\": \"方块颜色\",\r\n              \"description\": \"中间方块的颜色\",\r\n              \"default\": \"white\",\r\n              \"options\": [\r\n                { \"value\": \"white\", \"label\": \"白\" },\r\n                { \"value\": \"red\", \"label\": \"红\" },\r\n                { \"value\": \"green\", \"label\": \"绿\" },\r\n                { \"value\": \"blue\", \"label\": \"蓝\" },\r\n                { \"value\": \"yellow\", \"label\": \"黄\" }\r\n              ]\r\n            },\r\n            {\r\n              \"key\": \"project.spinSpeed\",\r\n              \"type\": \"float\",\r\n              \"label\": \"转速\",\r\n              \"description\": \"方块每秒转多少度\",\r\n              \"default\": 45,\r\n              \"min\": 0,\r\n              \"max\": 240,\r\n              \"step\": 1,\r\n              \"unit\": \"°/s\"\r\n            },\r\n            {\r\n              \"key\": \"project.scale\",\r\n              \"type\": \"float\",\r\n              \"label\": \"缩放\",\r\n              \"default\": 1,\r\n              \"min\": 0.4,\r\n              \"max\": 2.5,\r\n              \"step\": 0.05\r\n            },\r\n            {\r\n              \"key\": \"project.caption\",\r\n              \"type\": \"string\",\r\n              \"label\": \"标题\",\r\n              \"description\": \"显示在画面顶部\",\r\n              \"default\": \"设置演示\"\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"id\": \"marker\",\r\n          \"label\": \"标记\",\r\n          \"description\": \"标记关掉后，高度这一项会隐藏。\",\r\n          \"items\": [\r\n            {\r\n              \"key\": \"project.showMarker\",\r\n              \"type\": \"bool\",\r\n              \"label\": \"显示标记\",\r\n              \"default\": true\r\n            },\r\n            {\r\n              \"key\": \"project.markerHeight\",\r\n              \"type\": \"float\",\r\n              \"label\": \"标记高度\",\r\n              \"default\": 2.2,\r\n              \"min\": 0.4,\r\n              \"max\": 6,\r\n              \"step\": 0.1,\r\n              \"unit\": \"m\",\r\n              \"visibleIf\": \"project.showMarker=true\"\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"id\": \"lights\",\r\n          \"label\": \"附加光\",\r\n          \"description\": \"关掉附加光后，强度不能拖。\",\r\n          \"items\": [\r\n            {\r\n              \"key\": \"project.extraLights\",\r\n              \"type\": \"bool\",\r\n              \"label\": \"附加光\",\r\n              \"default\": true\r\n            },\r\n            {\r\n              \"key\": \"project.lightIntensity\",\r\n              \"type\": \"float\",\r\n              \"label\": \"附加光强度\",\r\n              \"default\": 1.5,\r\n              \"min\": 0,\r\n              \"max\": 4,\r\n              \"step\": 0.05,\r\n              \"enabledIf\": \"project.extraLights=true\"\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"id\": \"actions\",\r\n          \"label\": \"操作\",\r\n          \"items\": [\r\n            {\r\n              \"key\": \"project.pulse\",\r\n              \"type\": \"button\",\r\n              \"label\": \"跳动一下\",\r\n              \"description\": \"让中间方块短暂变大\",\r\n              \"buttonAction\": \"pulseSubject\"\r\n            }\r\n          ]\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
     "ConfigID": "IDab794780"
   },
   {
@@ -50,19 +32,18 @@
     "ConfigID": "ID6a59c5cb"
   },
   {
-    "m_Items": [],
-    "m_UseGUISetting": true,
-    "guiPanelConfig": {
+    "m_UseSettingPanel": true,
+    "m_Panel": {
       "m_ToggleKey": 282,
-      "m_GuiSkinPath": "",
+      "m_X": 80.0,
+      "m_Y": 60.0,
+      "m_W": 920.0,
+      "m_H": 620.0,
       "m_UsePercentage": true,
-      "m_WindowHeightPercentage": 0.8,
-      "m_X": 50.0,
-      "m_Y": 50.0,
-      "m_W": 400.0,
-      "m_H": 600.0
+      "m_WindowHeightPercentage": 0.82,
+      "m_ShowAdvancedByDefault": false
     },
-    "GUISettingTemplate": "[{\"key\":\"targetFrameRate\",\"type\":\"string\",\"label\":\"帧率设置\",\"description\":\"调整程序运行帧率 (0-120)\",\"value\":60,\"range\":{\"I1\":0,\"I2\":120}},{\"key\":\"showFPS\",\"type\":\"bool\",\"label\":\"显示FPS\",\"description\":\"在屏幕上显示帧率信息\",\"value\":false},{\"key\":\"graphicsQuality\",\"type\":\"enum\",\"label\":\"图形质量\",\"description\":\"选择游戏图形质量\",\"value\":\"中\",\"options\":[\"极低\",\"低\",\"中\",\"高\"]},{\"key\":\"resetSettings\",\"type\":\"button\",\"label\":\"重置设置\",\"description\":\"将所有设置恢复到默认值\",\"buttonAction\":\"resetSettings\"},{\"key\":\"exitApplication\",\"type\":\"button\",\"label\":\"退出程序\",\"description\":\"退出程序\",\"buttonAction\":\"exitApplication\"}]",
-    "ConfigID": "ID12de3770"
+    "m_SettingJson": "{\r\n  \"version\": 2,\r\n  \"system\": {\r\n    \"enabled\": true,\r\n    \"advanced\": true,\r\n    \"include\": [\"display\", \"quality\", \"audio\", \"performance\"]\r\n  },\r\n  \"tabs\": [\r\n    {\r\n      \"id\": \"project.demo\",\r\n      \"label\": \"项目示例\",\r\n      \"order\": 100,\r\n      \"kind\": \"project\",\r\n      \"groups\": [\r\n        {\r\n          \"id\": \"look\",\r\n          \"label\": \"外观\",\r\n          \"description\": \"改完后点底部「应用」。中间方块会马上变。\",\r\n          \"items\": [\r\n            {\r\n              \"type\": \"info\",\r\n              \"key\": \"project.help\",\r\n              \"label\": \"怎么看效果\",\r\n              \"description\": \"阴影距离看右侧由近到远的方块影子。阴影质量看近处影子硬软。LOD 偏移看左侧模型从圆球换成方块。各向异性过滤看地面斜向格子。主音量听循环提示音。渲染比例会让整屏变糊或变清晰。\"\r\n            },\r\n            {\r\n              \"key\": \"project.color\",\r\n              \"type\": \"enum\",\r\n              \"label\": \"方块颜色\",\r\n              \"description\": \"中间方块的颜色\",\r\n              \"default\": \"white\",\r\n              \"options\": [\r\n                { \"value\": \"white\", \"label\": \"白\" },\r\n                { \"value\": \"red\", \"label\": \"红\" },\r\n                { \"value\": \"green\", \"label\": \"绿\" },\r\n                { \"value\": \"blue\", \"label\": \"蓝\" },\r\n                { \"value\": \"yellow\", \"label\": \"黄\" }\r\n              ]\r\n            },\r\n            {\r\n              \"key\": \"project.spinSpeed\",\r\n              \"type\": \"float\",\r\n              \"label\": \"转速\",\r\n              \"description\": \"方块每秒转多少度\",\r\n              \"default\": 45,\r\n              \"min\": 0,\r\n              \"max\": 240,\r\n              \"step\": 1,\r\n              \"unit\": \"°/s\"\r\n            },\r\n            {\r\n              \"key\": \"project.scale\",\r\n              \"type\": \"float\",\r\n              \"label\": \"缩放\",\r\n              \"default\": 1,\r\n              \"min\": 0.4,\r\n              \"max\": 2.5,\r\n              \"step\": 0.05\r\n            },\r\n            {\r\n              \"key\": \"project.caption\",\r\n              \"type\": \"string\",\r\n              \"label\": \"标题\",\r\n              \"description\": \"显示在画面顶部\",\r\n              \"default\": \"设置演示\"\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"id\": \"marker\",\r\n          \"label\": \"标记\",\r\n          \"description\": \"标记关掉后，高度这一项会隐藏。\",\r\n          \"items\": [\r\n            {\r\n              \"key\": \"project.showMarker\",\r\n              \"type\": \"bool\",\r\n              \"label\": \"显示标记\",\r\n              \"default\": true\r\n            },\r\n            {\r\n              \"key\": \"project.markerHeight\",\r\n              \"type\": \"float\",\r\n              \"label\": \"标记高度\",\r\n              \"default\": 2.2,\r\n              \"min\": 0.4,\r\n              \"max\": 6,\r\n              \"step\": 0.1,\r\n              \"unit\": \"m\",\r\n              \"visibleIf\": \"project.showMarker=true\"\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"id\": \"lights\",\r\n          \"label\": \"附加光\",\r\n          \"description\": \"关掉附加光后，强度不能拖。\",\r\n          \"items\": [\r\n            {\r\n              \"key\": \"project.extraLights\",\r\n              \"type\": \"bool\",\r\n              \"label\": \"附加光\",\r\n              \"default\": true\r\n            },\r\n            {\r\n              \"key\": \"project.lightIntensity\",\r\n              \"type\": \"float\",\r\n              \"label\": \"附加光强度\",\r\n              \"default\": 1.5,\r\n              \"min\": 0,\r\n              \"max\": 4,\r\n              \"step\": 0.05,\r\n              \"enabledIf\": \"project.extraLights=true\"\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"id\": \"actions\",\r\n          \"label\": \"操作\",\r\n          \"items\": [\r\n            {\r\n              \"key\": \"project.pulse\",\r\n              \"type\": \"button\",\r\n              \"label\": \"跳动一下\",\r\n              \"description\": \"让中间方块短暂变大\",\r\n              \"buttonAction\": \"pulseSubject\"\r\n            }\r\n          ]\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}\r\n",
+    "ConfigID": "IDab794781"
   }
 ]

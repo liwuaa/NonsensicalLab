@@ -36,7 +36,11 @@
       "version": "file:com.nonsensicallab.nonsensicalkit.simulation",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
+      "dependencies": {
+        "com.nonsensicallab.nonsensicalkit.core": "1.0.7",
+        "com.nonsensicallab.nonsensicalkit.digitaltwin": "1.1.2",
+        "com.unity.timeline": "1.6.5"
+      }
     },
     "com.nonsensicallab.nonsensicalkit.ugui": {
       "version": "file:com.nonsensicallab.nonsensicalkit.ugui",
