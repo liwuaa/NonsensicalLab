@@ -1,0 +1,28 @@
+{
+    "name": "CineShot.Output.URP",
+    "rootNamespace": "CineShot.Output",
+    "references": [
+        "CineShot.Core",
+        "CineShot.Compat",
+        "CineShot.Output",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "CINE_URP_PRESENT"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "12.0.0",
+            "define": "CINE_URP_PRESENT"
+        }
+    ],
+    "noEngineReferences": false
+}
