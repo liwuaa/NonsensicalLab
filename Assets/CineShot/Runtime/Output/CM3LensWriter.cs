@@ -14,15 +14,10 @@ namespace CineShot.Output
         }
 
         public bool IsValid { get { return m_Vcam != null; } }
-        public Transform Transform { get { return m_Vcam != null ? m_Vcam.transform : null; } }
 
         public int Priority
         {
-            get
-            {
-                if (m_Vcam == null) return 0;
-                return m_Vcam.Priority.Value;
-            }
+            get { return m_Vcam != null ? m_Vcam.Priority.Value : 0; }
             set
             {
                 if (m_Vcam == null) return;
@@ -32,23 +27,21 @@ namespace CineShot.Output
             }
         }
 
-        public bool SetPose(Vector3 position, Quaternion rotation)
+        public void SetPose(Vector3 position, Quaternion rotation)
         {
-            if (m_Vcam == null) return false;
-            m_Vcam.transform.SetPositionAndRotation(position, rotation);
-            return true;
+            if (m_Vcam != null)
+                m_Vcam.ForceCameraPosition(position, rotation);
         }
 
-        public bool SetLens(in LensDTO lens)
+        public void SetLens(in LensDTO lens)
         {
-            if (m_Vcam == null) return false;
+            if (m_Vcam == null) return;
             LensSettings l = m_Vcam.Lens;
             l.FieldOfView = lens.FieldOfView;
             l.NearClipPlane = lens.NearClipPlane;
             l.FarClipPlane = lens.FarClipPlane;
             l.Dutch = lens.Dutch;
             m_Vcam.Lens = l;
-            return true;
         }
 
         public void SetEnabled(bool enabled)

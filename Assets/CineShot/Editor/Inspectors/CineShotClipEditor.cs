@@ -15,7 +15,25 @@ namespace CineShot.Editor
                 return;
             var rect = region.position;
             rect.width = 48f;
-            GUI.Label(rect, asset.shot.rigKind.ToString().Substring(0, 1));
+            string mark = RigMark(asset.shot.rigKind);
+            GUI.Label(rect, mark);
+        }
+
+        static string RigMark(RigKind kind)
+        {
+            switch (kind)
+            {
+                case RigKind.Static: return "静";
+                case RigKind.DollyTrack: return "轨";
+                case RigKind.Orbit: return "环";
+                case RigKind.PushPull: return "推";
+                case RigKind.Crane: return "吊";
+                case RigKind.Shoulder: return "肩";
+                case RigKind.Handheld: return "手";
+                case RigKind.SplineDolly: return "线";
+                case RigKind.Pan: return "摇";
+                default: return "?";
+            }
         }
     }
 }

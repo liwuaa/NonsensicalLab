@@ -1,38 +1,29 @@
-using UnityEngine;
-
 namespace CineShot.Core
 {
     public struct FocusRequest
     {
         public float Distance;
         public float Weight;
+        /// <summary>焦点来源；与上一帧不同时触发拉焦过渡。</summary>
         public int SourceId;
     }
 
     public struct FocusState
     {
         public float Distance;
-        public float Velocity;
-        public bool Pulling;
     }
 
-    public interface IFocusProvider
-    {
-        bool TryEvaluate(in CameraPose pose, float dt, out FocusRequest request);
-    }
-
+    /// <summary>景深写入端。URP 实现在 Output.URP 程序集。</summary>
     public interface IFocusOutput
     {
-        bool IsValid { get; }
-        void Apply(in FocusState state, in FocusProfile profile);
+        void Apply(in FocusState state, in FocusSettings settings);
         void Dispose();
     }
 
     public sealed class NullFocusOutput : IFocusOutput
     {
         public static readonly NullFocusOutput Instance = new NullFocusOutput();
-        public bool IsValid { get { return false; } }
-        public void Apply(in FocusState state, in FocusProfile profile) { }
+        public void Apply(in FocusState state, in FocusSettings settings) { }
         public void Dispose() { }
     }
 }

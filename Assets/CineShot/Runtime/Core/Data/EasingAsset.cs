@@ -2,15 +2,15 @@ using UnityEngine;
 
 namespace CineShot.Core
 {
-    [CreateAssetMenu(menuName = "CineShot/Easing Asset", fileName = "Ease_")]
+    [CreateAssetMenu(menuName = "CineShot/缓动曲线", fileName = "Ease_")]
     public class EasingAsset : ScriptableObject
     {
         public enum EaseKind
         {
-            Linear = 0,
-            SmoothStep = 1,
-            EaseInOutCubic = 2,
-            Custom = 3
+            [InspectorName("线性")] Linear = 0,
+            [InspectorName("平滑步进")] SmoothStep = 1,
+            [InspectorName("三次缓入缓出")] EaseInOutCubic = 2,
+            [InspectorName("自定义曲线")] Custom = 3
         }
 
         public EaseKind kind = EaseKind.EaseInOutCubic;
@@ -57,11 +57,6 @@ namespace CineShot.Core
                     ? 4f * x * x * x
                     : 1f - Mathf.Pow(-2f * x + 2f, 3f) * 0.5f;
             return x * x * (3f - 2f * x);
-        }
-
-        public static float EvaluateOrLinear(EasingAsset asset, float x)
-        {
-            return asset != null ? asset.Evaluate(x) : Mathf.Clamp01(x);
         }
     }
 }

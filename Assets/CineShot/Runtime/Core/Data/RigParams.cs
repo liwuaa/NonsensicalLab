@@ -8,6 +8,7 @@ namespace CineShot.Core
     {
         public Vector3 A;
         public Vector3 B;
+        public Vector3 C;
         public float P0;
         public float P1;
         public float P2;
@@ -28,7 +29,7 @@ namespace CineShot.Core
                     p.B = new Vector3(4f, 1.6f, -3f);
                     p.P0 = 0.5f;
                     p.P1 = 0.8f;
-                    p.P2 = 1.6f;
+                    p.P2 = 0f;
                     break;
                 case RigKind.Orbit:
                     p.P0 = 45f;
@@ -45,11 +46,9 @@ namespace CineShot.Core
                     p.A = new Vector3(34f, 0f, 0f);
                     break;
                 case RigKind.Crane:
-                    p.P0 = 0.9f;
-                    p.P1 = 3.2f;
-                    p.P2 = 3f;
-                    p.P3 = 2f;
-                    p.I0 = 1;
+                    p.A = new Vector3(0f, 1.6f, 0f);
+                    p.B = new Vector3(0f, 3.2f, -4f);
+                    p.P0 = 2f;
                     break;
                 case RigKind.Shoulder:
                     p.I0 = 1;
@@ -59,16 +58,23 @@ namespace CineShot.Core
                     p.P3 = 0f;
                     break;
                 case RigKind.Handheld:
-                    p.P0 = 0.02f;
-                    p.P1 = 0.7f;
-                    p.P2 = 0.25f;
-                    p.P3 = 0.15f;
+                    p.A = new Vector3(0f, 1.6f, -3.5f);
+                    p.P0 = 0.12f;
+                    p.P1 = 1.6f;
+                    p.P2 = 1.2f;
+                    p.P3 = 0.6f;
                     break;
                 case RigKind.SplineDolly:
                     p.P0 = 0.5f;
                     p.P1 = 1f;
-                    p.P2 = 0.4f;
+                    p.P2 = 0f;
                     p.I0 = 4;
+                    break;
+                case RigKind.Pan:
+                    p.A = new Vector3(0f, 1.6f, -4f);
+                    p.B = new Vector3(-2.5f, 1.5f, 0f);
+                    p.C = new Vector3(2.5f, 1.5f, 0f);
+                    p.P1 = 0.35f;
                     break;
             }
             return p;
@@ -78,10 +84,8 @@ namespace CineShot.Core
     [Serializable]
     public struct TargetBinding
     {
-        public TargetBindingMode mode;
         public Vector3 lookAtOffset;
         public Vector3 followOffset;
-        public float damping;
 
         public static TargetBinding LookAtDefault
         {
@@ -89,10 +93,8 @@ namespace CineShot.Core
             {
                 return new TargetBinding
                 {
-                    mode = TargetBindingMode.LookAt,
                     lookAtOffset = new Vector3(0f, 1.6f, 0f),
-                    followOffset = Vector3.zero,
-                    damping = 0f
+                    followOffset = Vector3.zero
                 };
             }
         }

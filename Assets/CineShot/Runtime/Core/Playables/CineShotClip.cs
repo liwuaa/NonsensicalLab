@@ -12,10 +12,13 @@ namespace CineShot.Core
         public ShotOverride overrides;
         public ExposedReference<Transform> lookAt;
         public ExposedReference<Transform> follow;
+        public ShotBlendMode blendMode = ShotBlendMode.Blend;
+        public float blendDuration = 0.5f;
         public EasingAsset easeIn;
         public EasingAsset easeOut;
-        public ShotBlendMode blendMode = ShotBlendMode.Blend;
         public CineSpline spline;
+        public CineSpline cameraSpline;
+        public EasingAsset panSpeed;
         public string matchKey;
         public string sourceHash;
         public double lastAppliedDuration;
@@ -23,6 +26,22 @@ namespace CineShot.Core
         public ClipCaps clipCaps
         {
             get { return ClipCaps.Blending | ClipCaps.SpeedMultiplier; }
+        }
+
+        public ShotContext BuildContext(float localTime, float duration, in TargetSample lookAt, in TargetSample follow, Vector3 composition)
+        {
+            return new ShotContext
+            {
+                LocalTime = localTime,
+                Duration = duration,
+                LookAt = lookAt,
+                Follow = follow,
+                CompositionOffset = composition,
+                Seed = shot != null ? shot.Seed : 0,
+                Spline = spline,
+                CameraSpline = cameraSpline,
+                Speed = panSpeed
+            };
         }
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)

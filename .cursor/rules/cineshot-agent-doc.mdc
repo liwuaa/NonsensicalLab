@@ -1,0 +1,19 @@
+---
+description: CineShot 模块改动前后必须维护 Agent 功能文档
+globs: Assets/CineShot/**,Assets/CineDemo/**
+alwaysApply: false
+---
+
+# CineShot Agent 文档
+
+改 `Assets/CineShot/**` 前先读：
+
+`Assets/CineShot/Docs/AGENT.md`
+
+改完后同一轮更新该文档：
+
+1. 在「变更记录」顶部追加本日要点
+2. 行为 / 字段 / 机位 / 转场 / 焦点有变则改对应章节
+3. 不要改桌面上的原始方案 md；以 `AGENT.md` 为实现真相。给人看的用法在 `Docs/使用说明.md`，不要把两份写成重复的长文
+
+未读或未更新 `AGENT.md` 不算完成 CineShot 任务。

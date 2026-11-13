@@ -7,19 +7,18 @@ namespace CineShot.Editor
 {
     public sealed class ShotLibraryWindow : EditorWindow
     {
-        enum ViewMode { List, Grid }
+        const string k_Folder = "Assets/CineShot/Templates/Shots";
 
         ShotQuery m_Query;
         List<ShotAsset> m_Hits = new List<ShotAsset>();
         Vector2 m_Scroll;
-        ViewMode m_View = ViewMode.List;
         string m_SelectedId;
         double m_LastQueryTime;
 
-        [MenuItem("Tools/Cine/Shot Library %#&l")]
+        [MenuItem("Tools/Cine/镜头库 %#&l")]
         public static void Open()
         {
-            GetWindow<ShotLibraryWindow>("Cine Shot 库");
+            GetWindow<ShotLibraryWindow>("镜头库");
         }
 
         void OnEnable()
@@ -47,21 +46,23 @@ namespace CineShot.Editor
                 if (EditorGUI.EndChangeCheck())
                     m_LastQueryTime = EditorApplication.timeSinceStartup;
 
-                if (GUILayout.Button("Refresh", EditorStyles.toolbarButton, GUILayout.Width(60)))
+                if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(48)))
                 {
                     ShotLibrary.Invalidate();
                     Refresh();
                 }
 
-                m_View = (ViewMode)GUILayout.Toolbar((int)m_View, new[] { "List", "Grid" }, EditorStyles.toolbarButton, GUILayout.Width(100));
-
-                if (GUILayout.Button("Create ▾", EditorStyles.toolbarDropDown, GUILayout.Width(80)))
+                if (GUILayout.Button("创建 ▾", EditorStyles.toolbarDropDown, GUILayout.Width(64)))
                 {
                     var menu = new GenericMenu();
-                    menu.AddItem(new GUIContent("From Scene View"), false, CreateFromSceneView);
-                    menu.AddItem(new GUIContent("From Selected Camera"), false, CreateFromSelectedCamera);
-                    menu.AddItem(new GUIContent("Static Default"), false, () => CreateDefault(RigKind.Static));
-                    menu.AddItem(new GUIContent("Orbit Default"), false, () => CreateDefault(RigKind.Orbit));
+                    menu.AddItem(new GUIContent("从 Scene 视角"), false, CreateFromSceneView);
+                    menu.AddItem(new GUIContent("从选中相机"), false, CreateFromSelectedCamera);
+                    menu.AddSeparator(string.Empty);
+                    foreach (RigKind kind in System.Enum.GetValues(typeof(RigKind)))
+                    {
+                        var k = kind;
+                        menu.AddItem(new GUIContent("按机位/" + CineShotSceneEditor.RigLabel(k)), false, () => CreateDefault(k));
+                    }
                     menu.ShowAsContext();
                 }
             }
@@ -79,7 +80,11 @@ namespace CineShot.Editor
             for (int i = 0; i < m_Hits.Count; i++)
             {
                 var s = m_Hits[i];
-                string label = (string.IsNullOrEmpty(s.displayName) ? s.name : s.displayName) + "  [" + s.rigKind + "]  " + s.defaultDuration.ToString("0.0") + "s";
+                string name = string.IsNullOrEmpty(s.displayName) ? s.name : s.displayName;
+                string tags = ShotLibrary.FormatTags(s.tags);
+                string label = name + "  [" + CineShotSceneEditor.RigLabel(s.rigKind) + "]  " + s.defaultDuration.ToString("0.0") + "s";
+                if (!string.IsNullOrEmpty(tags))
+                    label += "  #" + tags.Replace(" · ", " #");
                 bool selected = s.Id == m_SelectedId;
                 if (GUILayout.Toggle(selected, label, "Button"))
                     m_SelectedId = s.Id;
@@ -94,18 +99,22 @@ namespace CineShot.Editor
                 var shot = FindSelected();
                 if (shot == null)
                 {
-                    EditorGUILayout.HelpBox("选中一个 Shot 查看详情。", MessageType.Info);
+                    EditorGUILayout.LabelField("选中镜头可复制变体或送入分镜表。", EditorStyles.miniLabel);
                     return;
                 }
                 EditorGUILayout.LabelField(shot.displayName, EditorStyles.boldLabel);
-                EditorGUILayout.LabelField("Id", shot.Id);
-                EditorGUILayout.LabelField("Rig", shot.rigKind.ToString());
-                EditorGUILayout.LabelField("Duration", shot.defaultDuration.ToString("0.00") + "s");
-                EditorGUILayout.LabelField("FOV", shot.fov.ToString("0.0"));
-                EditorGUILayout.LabelField("Refs", ShotLibrary.CountReferences(shot).ToString());
-                if (GUILayout.Button("Ping"))
+                EditorGUILayout.LabelField("编号", shot.Id);
+                EditorGUILayout.LabelField("机位类型", CineShotSceneEditor.RigLabel(shot.rigKind));
+                EditorGUILayout.LabelField("默认时长", shot.defaultDuration.ToString("0.00") + " 秒");
+                EditorGUILayout.LabelField("视场角 FOV", shot.fov.ToString("0.0"));
+                EditorGUILayout.LabelField("优先级", shot.priority.ToString());
+                string tags = ShotLibrary.FormatTags(shot.tags);
+                EditorGUILayout.LabelField("标签", string.IsNullOrEmpty(tags) ? "（无）" : tags);
+                EditorGUILayout.LabelField("引用次数", ShotLibrary.CountReferences(shot).ToString());
+                EditorGUILayout.LabelField("搜索：名称 / Id / 标签；#近景 只筛标签", EditorStyles.miniLabel);
+                if (GUILayout.Button("在工程中定位"))
                     EditorGUIUtility.PingObject(shot);
-                if (GUILayout.Button("Duplicate As Variant"))
+                if (GUILayout.Button("复制为变体"))
                 {
                     var v = ShotLibrary.DuplicateAsVariant(shot);
                     if (v != null)
@@ -114,14 +123,14 @@ namespace CineShot.Editor
                         Refresh();
                     }
                 }
-                if (GUILayout.Button("Send To Storyboard"))
+                if (GUILayout.Button("发送到分镜表"))
                     StoryboardWindow.OpenWithShot(shot);
             }
         }
 
         void DrawStatus()
         {
-            EditorGUILayout.LabelField("Hits: " + m_Hits.Count, EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("匹配结果：" + m_Hits.Count + " 条", EditorStyles.miniLabel);
         }
 
         void Refresh()
@@ -143,11 +152,11 @@ namespace CineShot.Editor
             var sv = SceneView.lastActiveSceneView;
             if (sv == null || sv.camera == null)
             {
-                EditorUtility.DisplayDialog("CineShot", "没有活动的 SceneView 相机。", "OK");
+                EditorUtility.DisplayDialog("CineShot", "没有活动的 Scene 视图相机。", "确定");
                 return;
             }
             var cam = sv.camera;
-            var shot = ShotLibrary.Create("Assets/CineShot/Samples/Assets/Shots", "Shot_SceneCapture", RigKind.Static);
+            var shot = ShotLibrary.Create(k_Folder, "Shot_SceneCapture", RigKind.Static);
             shot.fov = cam.fieldOfView;
             shot.nearClip = cam.nearClipPlane;
             shot.farClip = cam.farClipPlane;
@@ -165,10 +174,10 @@ namespace CineShot.Editor
             var cam = Selection.activeGameObject != null ? Selection.activeGameObject.GetComponent<Camera>() : null;
             if (cam == null)
             {
-                EditorUtility.DisplayDialog("CineShot", "请先选中带 Camera 的对象。", "OK");
+                EditorUtility.DisplayDialog("CineShot", "请先选中带 Camera 的对象。", "确定");
                 return;
             }
-            var shot = ShotLibrary.Create("Assets/CineShot/Samples/Assets/Shots", "Shot_FromCamera", RigKind.Static);
+            var shot = ShotLibrary.Create(k_Folder, "Shot_FromCamera", RigKind.Static);
             shot.fov = cam.fieldOfView;
             shot.nearClip = cam.nearClipPlane;
             shot.farClip = cam.farClipPlane;
@@ -180,7 +189,7 @@ namespace CineShot.Editor
 
         void CreateDefault(RigKind kind)
         {
-            var shot = ShotLibrary.Create("Assets/CineShot/Samples/Assets/Shots", "Shot_" + kind, kind);
+            var shot = ShotLibrary.Create(k_Folder, "Shot_" + kind, kind);
             m_SelectedId = shot.Id;
             Refresh();
         }

@@ -1,4 +1,3 @@
-using CineShot.Compat;
 using CineShot.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -13,16 +12,8 @@ namespace CineShot.Output
         DepthOfField m_Dof;
         bool m_Valid;
 
-        public bool IsValid { get { return m_Valid; } }
-
-        public UrpFocusOutput(Transform host, FocusProfile profile)
+        public UrpFocusOutput(Transform host)
         {
-            if (!DofChannelProbe.HasWritableDofChannel())
-            {
-                WarnOnce.Log("urp.dof", "[CineShot] URP DepthOfField 通道不可用，焦点输出为空。");
-                return;
-            }
-
             var go = new GameObject("CineShot_RuntimeDOF");
             go.hideFlags = HideFlags.HideAndDontSave;
             if (host != null)
@@ -40,41 +31,42 @@ namespace CineShot.Output
             m_Dof.active = true;
             m_Dof.mode.overrideState = true;
             m_Dof.focusDistance.overrideState = true;
+            m_Dof.gaussianStart.overrideState = true;
+            m_Dof.gaussianEnd.overrideState = true;
             m_Dof.aperture.overrideState = true;
             m_Dof.focalLength.overrideState = true;
-
-            ApplyProfileDefaults(profile);
+            m_Dof.bladeCount.overrideState = true;
             m_Valid = true;
         }
 
-        void ApplyProfileDefaults(FocusProfile profile)
-        {
-            if (m_Dof == null)
-                return;
-            bool bokeh = profile == null || profile.dofMode == DofMode.Bokeh;
-            m_Dof.mode.value = bokeh ? DepthOfFieldMode.Bokeh : DepthOfFieldMode.Gaussian;
-            if (profile != null)
-            {
-                m_Dof.aperture.value = profile.aperture;
-                m_Dof.focalLength.value = profile.focalLength;
-                m_Dof.bladeCount.value = profile.bladeCount;
-            }
-        }
-
-        public void Apply(in FocusState state, in FocusProfile profile)
+        public void Apply(in FocusState state, in FocusSettings settings)
         {
             if (!m_Valid || m_Dof == null)
                 return;
-            m_Dof.focusDistance.value = Mathf.Max(0.1f, state.Distance);
-            if (profile != null)
+            if (settings.dofMode == DofMode.Off)
             {
-                bool bokeh = profile.dofMode == DofMode.Bokeh;
-                m_Dof.mode.value = bokeh ? DepthOfFieldMode.Bokeh : DepthOfFieldMode.Gaussian;
-                if (bokeh)
-                {
-                    m_Dof.aperture.value = profile.aperture;
-                    m_Dof.focalLength.value = profile.focalLength;
-                }
+                m_Dof.active = false;
+                return;
+            }
+
+            m_Dof.active = true;
+            float distance = Mathf.Max(0.1f, state.Distance);
+            bool bokeh = settings.dofMode == DofMode.Bokeh;
+            m_Dof.mode.value = bokeh ? DepthOfFieldMode.Bokeh : DepthOfFieldMode.Gaussian;
+            if (bokeh)
+            {
+                // 对焦距离跟目标；焦距 mm 是镜头虚化强度，不随目标变
+                m_Dof.focusDistance.value = distance;
+                m_Dof.aperture.value = settings.aperture;
+                m_Dof.focalLength.value = settings.focalLength;
+                m_Dof.bladeCount.value = settings.bladeCount;
+            }
+            else
+            {
+                // 高斯不用 focusDistance，用 Start/End；跟随目标时随对焦距离挪清晰带
+                float span = Mathf.Max(0.5f, distance * Mathf.Clamp(settings.aperture / 5.6f, 0.25f, 2f) * 0.35f);
+                m_Dof.gaussianStart.value = distance;
+                m_Dof.gaussianEnd.value = distance + span;
             }
         }
 
@@ -93,16 +85,6 @@ namespace CineShot.Output
                 m_Volume = null;
                 Object.DestroyImmediate(go);
             }
-        }
-    }
-
-    public sealed class UrpFocusOutputFactory : IFocusOutputFactory
-    {
-        public IFocusOutput Create(Transform host, FocusProfile profile)
-        {
-            if (!DofChannelProbe.HasWritableDofChannel())
-                return NullFocusOutput.Instance;
-            return new UrpFocusOutput(host, profile);
         }
     }
 }

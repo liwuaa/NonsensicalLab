@@ -6,7 +6,7 @@ namespace CineShot.Core
     public static class CineOutputFactory
     {
         public static Func<Component, ICameraOutput> CreateCameraOutput;
-        public static Func<Transform, FocusProfile, IFocusOutput> CreateFocusOutput;
+        public static Func<Transform, IFocusOutput> CreateFocusOutput;
 
         public static ICameraOutput GetCameraOutput(Component vcam)
         {
@@ -19,11 +19,11 @@ namespace CineShot.Core
             return NullCameraOutput.Instance;
         }
 
-        public static IFocusOutput GetFocusOutput(Transform host, FocusProfile profile)
+        public static IFocusOutput GetFocusOutput(Transform host)
         {
             if (CreateFocusOutput != null)
             {
-                var output = CreateFocusOutput(host, profile);
+                var output = CreateFocusOutput(host);
                 if (output != null)
                     return output;
             }

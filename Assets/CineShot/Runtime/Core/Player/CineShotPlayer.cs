@@ -3,6 +3,7 @@ using UnityEngine.Playables;
 
 namespace CineShot.Core
 {
+    /// <summary>场景里的播放入口：播放 / 打断 / 续播 / 停止，内部是 <see cref="CinePlayer"/> 状态机。</summary>
     [DisallowMultipleComponent]
     public sealed class CineShotPlayer : MonoBehaviour
     {
@@ -12,7 +13,7 @@ namespace CineShot.Core
 
         CinePlayer m_Player;
 
-        public CinePlayer Player { get { return m_Player; } }
+        public CinePlayer Player { get { return EnsurePlayer(); } }
         public PlayableDirector Director { get { return m_Director; } }
         public CineShotRig Rig { get { return m_Rig; } }
 
@@ -25,12 +26,11 @@ namespace CineShot.Core
             EnsurePlayer();
         }
 
-        void EnsurePlayer()
+        CinePlayer EnsurePlayer()
         {
-            if (m_Player != null)
-                return;
-            ICameraOutput output = m_Rig != null ? m_Rig.Output : NullCameraOutput.Instance;
-            m_Player = new CinePlayer(output, m_Director, m_Rig);
+            if (m_Player == null)
+                m_Player = new CinePlayer(m_Director, m_Rig);
+            return m_Player;
         }
 
         void Update()
@@ -41,33 +41,26 @@ namespace CineShot.Core
 
         public bool Play(double startTime = 0.0)
         {
-            EnsurePlayer();
             if (m_Rig != null)
                 m_Rig.RebuildOutputs();
-            EnsurePlayer();
-            // recreate with latest output
-            m_Player = new CinePlayer(m_Rig != null ? m_Rig.Output : NullCameraOutput.Instance, m_Director, m_Rig);
-            return m_Player.Play(null, startTime);
+            return EnsurePlayer().Play(null, startTime);
         }
 
         public void Stop(bool immediate = true)
         {
-            EnsurePlayer();
-            m_Player.Stop(immediate);
+            EnsurePlayer().Stop(immediate);
         }
 
         public bool Interrupt(float blendSeconds = -1f)
         {
-            EnsurePlayer();
             if (blendSeconds < 0f)
                 blendSeconds = m_DefaultInterruptBlend;
-            return m_Player.Interrupt(blendSeconds);
+            return EnsurePlayer().Interrupt(blendSeconds);
         }
 
         public bool Resume()
         {
-            EnsurePlayer();
-            return m_Player.Resume();
+            return EnsurePlayer().Resume();
         }
     }
 }

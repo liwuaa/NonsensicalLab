@@ -16,7 +16,7 @@ namespace CineShot.Core
     {
         const float DefaultBlend = 0.35f;
 
-        readonly ICameraOutput m_Output;
+        readonly ICameraOutput m_FixedOutput;
         readonly PlayableDirector m_Director;
         readonly CineShotRig m_Rig;
         CineState m_State = CineState.Idle;
@@ -29,26 +29,41 @@ namespace CineShot.Core
         public event Action<ShotAsset, ShotAsset> OnShotChanged;
         public event Action<float> OnInterrupted;
         public event Action<ShotAsset> OnFinished;
-        public Action AlignBeforeResume;
 
         public CineState State { get { return m_State; } }
         public ShotAsset CurrentShot { get { return m_CurrentShot; } }
         public bool HasResume { get { return m_HasResume; } }
         public double ResumePoint { get { return m_ResumePoint; } }
 
-        public CinePlayer(ICameraOutput output, PlayableDirector director, CineShotRig rig)
+        /// <summary>输出随 Rig 走（Rig 重建适配器后仍有效）。</summary>
+        public CinePlayer(PlayableDirector director, CineShotRig rig)
         {
-            m_Output = output ?? NullCameraOutput.Instance;
             m_Director = director;
             m_Rig = rig;
         }
 
+        /// <summary>不依赖 Rig 的输出，测试或自定义输出用。</summary>
+        public CinePlayer(ICameraOutput output, PlayableDirector director, CineShotRig rig)
+            : this(director, rig)
+        {
+            m_FixedOutput = output;
+        }
+
+        ICameraOutput Output
+        {
+            get
+            {
+                if (m_FixedOutput != null)
+                    return m_FixedOutput;
+                return m_Rig != null ? m_Rig.Output : NullCameraOutput.Instance;
+            }
+        }
+
+        /// <summary>从 startTime 开播。任何状态都可调用，会丢弃续播点；要接着打断处播用 <see cref="Resume"/>。</summary>
         public bool Play(ShotAsset shot, double startTime)
         {
-            if (m_State == CineState.BlendingOut)
-                return false;
-            bool useResume = m_State == CineState.PausedResumable && m_HasResume;
-            EnterPlaying(shot, useResume ? m_ResumePoint : startTime);
+            m_HasResume = false;
+            EnterPlaying(shot, startTime);
             return true;
         }
 
@@ -61,7 +76,7 @@ namespace CineShot.Core
                 BeginBlend(m_State == CineState.Playing ? DefaultBlend : 0f, false);
                 return;
             }
-            m_Output.SetControlling(false);
+            Output.SetControlling(false);
             if (m_Director != null)
                 m_Director.Stop();
             m_HasResume = false;
@@ -82,10 +97,6 @@ namespace CineShot.Core
                 }
                 RaiseInterrupted(blendSeconds);
             }
-            else if (m_State == CineState.PausedResumable)
-            {
-                // idempotent
-            }
             BeginBlend(blendSeconds, true);
             return true;
         }
@@ -94,11 +105,6 @@ namespace CineShot.Core
         {
             if (m_State != CineState.PausedResumable || !m_HasResume)
                 return false;
-            if (AlignBeforeResume != null)
-            {
-                try { AlignBeforeResume(); }
-                catch (Exception ex) { Debug.LogException(ex); }
-            }
             EnterPlaying(m_CurrentShot, m_ResumePoint);
             return true;
         }
@@ -111,6 +117,17 @@ namespace CineShot.Core
 
         public void Tick(float dt)
         {
+            if (m_State == CineState.Playing && m_Rig != null)
+            {
+                var active = m_Rig.ActiveShot;
+                if (active != m_CurrentShot)
+                {
+                    var old = m_CurrentShot;
+                    m_CurrentShot = active;
+                    RaiseShotChanged(old, m_CurrentShot);
+                }
+            }
+
             if (m_State != CineState.BlendingOut)
                 return;
             m_BlendRemaining -= dt;
@@ -120,7 +137,7 @@ namespace CineShot.Core
             if (m_BlendRemaining > 0f)
                 return;
 
-            m_Output.SetControlling(false);
+            Output.SetControlling(false);
             if (m_HasResume)
             {
                 m_State = CineState.PausedResumable;
@@ -139,7 +156,7 @@ namespace CineShot.Core
             var old = m_CurrentShot;
             if (shot != null)
                 m_CurrentShot = shot;
-            m_Output.SetControlling(true);
+            Output.SetControlling(true);
             if (m_Director != null)
             {
                 m_Director.time = time;

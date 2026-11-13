@@ -15,15 +15,15 @@ namespace CineShot.Editor
         Vector2 m_Scroll;
         readonly List<ShotAsset> m_PendingShots = new List<ShotAsset>();
 
-        [MenuItem("Tools/Cine/Storyboard %#&b")]
+        [MenuItem("Tools/Cine/分镜表 %#&b")]
         public static void Open()
         {
-            GetWindow<StoryboardWindow>("Cine 分镜表");
+            GetWindow<StoryboardWindow>("分镜表");
         }
 
         public static void OpenWithShot(ShotAsset shot)
         {
-            var win = GetWindow<StoryboardWindow>("Cine 分镜表");
+            var win = GetWindow<StoryboardWindow>("分镜表");
             win.m_PendingShots.Add(shot);
             win.EnsureSequence();
             win.FlushPending();
@@ -37,20 +37,23 @@ namespace CineShot.Editor
 
         void OnGUI()
         {
+            EditorGUI.LabelField(CineHelp.Line(CineTips.Storyboard), "分镜表", EditorStyles.boldLabel);
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
-                m_Director = (PlayableDirector)EditorGUILayout.ObjectField(m_Director, typeof(PlayableDirector), true, GUILayout.Width(220));
+                EditorGUILayout.LabelField("导演", GUILayout.Width(28));
+                m_Director = (PlayableDirector)EditorGUILayout.ObjectField(m_Director, typeof(PlayableDirector), true, GUILayout.Width(160));
+                EditorGUILayout.LabelField("分镜", GUILayout.Width(28));
                 m_Sequence = (CineSequenceAsset)EditorGUILayout.ObjectField(m_Sequence, typeof(CineSequenceAsset), false);
-                if (GUILayout.Button("New Seq", EditorStyles.toolbarButton, GUILayout.Width(70)))
+                if (GUILayout.Button("新建", EditorStyles.toolbarButton, GUILayout.Width(44)))
                     CreateSequence();
-                if (GUILayout.Button("Lay Out Tracks", EditorStyles.toolbarButton, GUILayout.Width(110)))
+                if (GUILayout.Button("铺轨", EditorStyles.toolbarButton, GUILayout.Width(44)))
                     LayOut();
             }
 
             FlushPending();
             if (m_Sequence == null)
             {
-                EditorGUILayout.HelpBox("创建或指定 CineSequenceAsset。", MessageType.Info);
+                EditorGUILayout.LabelField("请创建或指定分镜资产。", EditorStyles.miniLabel);
                 return;
             }
 
@@ -60,12 +63,6 @@ namespace CineShot.Editor
             m_Scroll = EditorGUILayout.BeginScrollView(m_Scroll);
             m_List.DoLayoutList();
             EditorGUILayout.EndScrollView();
-
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button("Batch Set Duration 2.5s"))
-                    BatchSetDuration(2.5);
-            }
         }
 
         void EnsureSequence()
@@ -79,13 +76,13 @@ namespace CineShot.Editor
 
         void CreateSequence()
         {
-            if (!AssetDatabase.IsValidFolder("Assets/CineShot/Samples/Assets/Sequences"))
-            {
-                System.IO.Directory.CreateDirectory("Assets/CineShot/Samples/Assets/Sequences");
-                AssetDatabase.Refresh();
-            }
+            const string folder = "Assets/CineShot/Templates/Sequences";
+            if (!AssetDatabase.IsValidFolder("Assets/CineShot/Templates"))
+                AssetDatabase.CreateFolder("Assets/CineShot", "Templates");
+            if (!AssetDatabase.IsValidFolder(folder))
+                AssetDatabase.CreateFolder("Assets/CineShot/Templates", "Sequences");
             m_Sequence = ScriptableObject.CreateInstance<CineSequenceAsset>();
-            AssetDatabase.CreateAsset(m_Sequence, AssetDatabase.GenerateUniqueAssetPath("Assets/CineShot/Samples/Assets/Sequences/Seq_.asset"));
+            AssetDatabase.CreateAsset(m_Sequence, AssetDatabase.GenerateUniqueAssetPath(folder + "/Seq_.asset"));
             AssetDatabase.SaveAssets();
             RebuildList();
         }
@@ -94,7 +91,7 @@ namespace CineShot.Editor
         {
             if (m_Sequence == null || m_PendingShots.Count == 0)
                 return;
-            Undo.RecordObject(m_Sequence, "Add Storyboard Rows");
+            Undo.RecordObject(m_Sequence, "添加分镜行");
             for (int i = 0; i < m_PendingShots.Count; i++)
             {
                 var s = m_PendingShots[i];
@@ -104,7 +101,8 @@ namespace CineShot.Editor
                     shotGuid = s.Id,
                     rowIndex = m_Sequence.rows.Count,
                     duration = s.defaultDuration,
-                    blendMode = ShotBlendMode.Cut
+                    blendMode = ShotBlendMode.Blend,
+                    blendDuration = 0.5f
                 });
             }
             m_PendingShots.Clear();
@@ -120,7 +118,7 @@ namespace CineShot.Editor
                 return;
             }
             m_List = new ReorderableList(m_Sequence.rows, typeof(StoryboardRow), true, true, true, true);
-            m_List.drawHeaderCallback = rect => EditorGUI.LabelField(rect, "Storyboard Rows");
+            m_List.drawHeaderCallback = rect => EditorGUI.LabelField(rect, "分镜行（可拖拽排序）");
             m_List.elementHeight = 44f;
             m_List.drawElementCallback = (rect, index, active, focused) =>
             {
@@ -130,34 +128,41 @@ namespace CineShot.Editor
                 float y = rect.y + 2;
                 float w = rect.width;
                 EditorGUI.LabelField(new Rect(rect.x, y, 28, 18), (index + 1).ToString());
-                row.shotGuid = EditorGUI.TextField(new Rect(rect.x + 30, y, w * 0.35f, 18), row.shotGuid);
-                row.duration = EditorGUI.DoubleField(new Rect(rect.x + w * 0.38f, y, 60, 18), row.duration);
-                row.blendMode = (ShotBlendMode)EditorGUI.EnumPopup(new Rect(rect.x + w * 0.38f + 66, y, 90, 18), row.blendMode);
-                row.note = EditorGUI.TextField(new Rect(rect.x + w * 0.38f + 160, y, w - (w * 0.38f + 160), 18), row.note);
+                var current = ShotLibrary.FindById(row.shotGuid);
+                var picked = (ShotAsset)EditorGUI.ObjectField(new Rect(rect.x + 30, y, w * 0.32f, 18), current, typeof(ShotAsset), false);
+                if (picked != current)
+                {
+                    Undo.RecordObject(m_Sequence, "改分镜镜头");
+                    row.shotGuid = picked != null ? picked.Id : string.Empty;
+                    EditorUtility.SetDirty(m_Sequence);
+                }
+                row.duration = EditorGUI.DoubleField(new Rect(rect.x + w * 0.35f, y, 54, 18), new GUIContent(string.Empty, "时长（秒）"), row.duration);
+                var modeRect = new Rect(rect.x + w * 0.35f + 58, y, 110, 18);
+                modeRect = CineHelp.Trim(modeRect, CineTips.Blend);
+                row.blendMode = (ShotBlendMode)EditorGUI.EnumPopup(modeRect, row.blendMode);
+                float noteX = rect.x + w * 0.35f + 172;
+                if (row.blendMode == ShotBlendMode.Blend)
+                {
+                    var durRect = CineHelp.Trim(new Rect(noteX, y, 68, 18), CineTips.BlendDuration);
+                    row.blendDuration = EditorGUI.FloatField(durRect, row.blendDuration);
+                    noteX += 72f;
+                }
+                row.note = EditorGUI.TextField(new Rect(noteX, y, rect.xMax - noteX, 18), new GUIContent(string.Empty, "备注"), row.note ?? string.Empty);
                 row.rowIndex = index;
             };
             m_List.onReorderCallback = list =>
             {
-                Undo.RecordObject(m_Sequence, "Reorder Storyboard");
+                Undo.RecordObject(m_Sequence, "重排分镜");
                 for (int i = 0; i < m_Sequence.rows.Count; i++)
                     m_Sequence.rows[i].rowIndex = i;
                 EditorUtility.SetDirty(m_Sequence);
             };
             m_List.onAddCallback = list =>
             {
-                Undo.RecordObject(m_Sequence, "Add Storyboard Row");
+                Undo.RecordObject(m_Sequence, "添加分镜行");
                 m_Sequence.rows.Add(new StoryboardRow { rowIndex = m_Sequence.rows.Count, duration = 4.0 });
                 EditorUtility.SetDirty(m_Sequence);
             };
-        }
-
-        void BatchSetDuration(double d)
-        {
-            if (m_Sequence == null) return;
-            Undo.RecordObject(m_Sequence, "Batch Duration");
-            for (int i = 0; i < m_Sequence.rows.Count; i++)
-                m_Sequence.rows[i].duration = d;
-            EditorUtility.SetDirty(m_Sequence);
         }
 
         void LayOut()
@@ -168,7 +173,7 @@ namespace CineShot.Editor
                     : null;
             if (m_Director == null)
             {
-                EditorUtility.DisplayDialog("CineShot", "请先选中带 PlayableDirector 的对象，或在窗口顶部指定。", "OK");
+                EditorUtility.DisplayDialog("CineShot", "请先选中带 PlayableDirector 的对象，或在窗口顶部指定。", "确定");
                 return;
             }
             ShotTrackLayer.Reconcile(m_Director, m_Sequence, ConflictPolicy.Ask);

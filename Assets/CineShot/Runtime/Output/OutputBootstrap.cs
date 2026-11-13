@@ -3,15 +3,20 @@ using UnityEngine;
 
 namespace CineShot.Output
 {
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoad]
+#endif
     public static class OutputBootstrap
     {
+        static OutputBootstrap()
+        {
+            Register();
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Register()
+        public static void Register()
         {
             CineOutputFactory.CreateCameraOutput = AdapterCameraOutput.CreateFromComponent;
-#if CINE_URP_PRESENT
-            // URP factory registered by Output.URP assembly if present
-#endif
         }
     }
 }

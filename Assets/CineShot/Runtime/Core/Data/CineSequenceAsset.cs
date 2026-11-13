@@ -11,18 +11,12 @@ namespace CineShot.Core
         public int rowIndex;
         public double duration = 4.0;
         public double gap;
-        public bool hasRigOverride;
-        public RigKind rigOverride;
-        public string targetTag;
-        public double blendIn;
-        public double blendOut;
-        public float timeScale = 1f;
-        public bool loop;
         public string note;
-        public ShotBlendMode blendMode = ShotBlendMode.Cut;
+        public ShotBlendMode blendMode = ShotBlendMode.Blend;
+        public float blendDuration = 0.5f;
     }
 
-    [CreateAssetMenu(menuName = "CineShot/Sequence Asset", fileName = "Seq_")]
+    [CreateAssetMenu(menuName = "CineShot/分镜资产", fileName = "Seq_")]
     public class CineSequenceAsset : ScriptableObject
     {
         public TimelineAssetRef timeline;

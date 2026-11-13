@@ -5,34 +5,20 @@ namespace CineShot.Output
 {
     public sealed class AdapterCameraOutput : ICameraOutput
     {
+        const int k_PlayingPriority = 100;
+
         readonly ILensWriter m_Writer;
-        bool m_Controlling;
-        int m_PlayingPriority = 100;
-        int m_IdlePriority;
+        readonly int m_IdlePriority;
 
         public AdapterCameraOutput(ILensWriter writer)
         {
             m_Writer = writer;
-            if (m_Writer != null)
-                m_IdlePriority = m_Writer.Priority;
+            m_IdlePriority = writer.Priority;
         }
-
-        public bool SupportsDutch { get { return true; } }
-        public bool SupportsPhysicalLens { get { return false; } }
-        public Transform OutputTransform { get { return m_Writer != null ? m_Writer.Transform : null; } }
-        public bool IsControlling { get { return m_Controlling; } }
-
-        public int Priority
-        {
-            get { return m_Writer != null ? m_Writer.Priority : 0; }
-            set { if (m_Writer != null) m_Writer.Priority = value; }
-        }
-
-        public void Bind(Camera fallbackCamera) { }
 
         public void Apply(in CameraPose pose)
         {
-            if (m_Writer == null || !m_Writer.IsValid)
+            if (!m_Writer.IsValid)
                 return;
             m_Writer.SetPose(pose.Position, pose.Rotation);
             var lens = new LensDTO
@@ -47,11 +33,8 @@ namespace CineShot.Output
 
         public void SetControlling(bool controlling)
         {
-            m_Controlling = controlling;
-            if (m_Writer == null)
-                return;
             m_Writer.SetEnabled(controlling);
-            m_Writer.Priority = controlling ? m_PlayingPriority : m_IdlePriority;
+            m_Writer.Priority = controlling ? k_PlayingPriority : m_IdlePriority;
         }
 
         public static ICameraOutput CreateFromComponent(Component vcam)

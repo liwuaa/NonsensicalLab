@@ -10,9 +10,8 @@ namespace CineShot.Editor
     {
         public string text;
         public RigKind? rig;
-        public bool favoritesOnly;
-        public bool unusedOnly;
-        public bool brokenOnly;
+        /// <summary>仅匹配标签；空则不限。可用搜索框 #标签 写入。</summary>
+        public string tag;
     }
 
     public static class ShotLibrary
@@ -51,26 +50,89 @@ namespace CineShot.Editor
             s_LastRefresh = EditorApplication.timeSinceStartup;
         }
 
+        public static ShotAsset FindById(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return null;
+            EnsureCache();
+            for (int i = 0; i < s_Cache.Count; i++)
+            {
+                if (s_Cache[i] != null && s_Cache[i].Id == id)
+                    return s_Cache[i];
+            }
+            return null;
+        }
+
+        /// <summary>分镜行按镜头编号存引用；界面上用资产选择框。</summary>
+        public static void ShotField(Rect rect, GUIContent label, SerializedProperty idProp)
+        {
+            var current = FindById(idProp.stringValue);
+            var picked = (ShotAsset)EditorGUI.ObjectField(rect, label, current, typeof(ShotAsset), false);
+            if (picked != current)
+                idProp.stringValue = picked != null ? picked.Id : string.Empty;
+        }
+
         public static List<ShotAsset> Query(ShotQuery q)
         {
             EnsureCache();
             var hits = new List<ShotAsset>();
             string text = q.text != null ? q.text.Trim() : string.Empty;
+            string tagFilter = q.tag != null ? q.tag.Trim() : string.Empty;
+            if (string.IsNullOrEmpty(tagFilter) && text.StartsWith("#", StringComparison.Ordinal))
+            {
+                tagFilter = text.Substring(1).Trim();
+                text = string.Empty;
+            }
             for (int i = 0; i < s_Cache.Count; i++)
             {
                 var s = s_Cache[i];
                 if (q.rig.HasValue && s.rigKind != q.rig.Value)
                     continue;
-                if (!string.IsNullOrEmpty(text))
-                {
-                    string name = string.IsNullOrEmpty(s.displayName) ? s.name : s.displayName;
-                    if (name.IndexOf(text, StringComparison.OrdinalIgnoreCase) < 0
-                        && (s.Id == null || s.Id.IndexOf(text, StringComparison.OrdinalIgnoreCase) < 0))
-                        continue;
-                }
+                if (!string.IsNullOrEmpty(tagFilter) && !HasTag(s.tags, tagFilter))
+                    continue;
+                if (!string.IsNullOrEmpty(text) && !MatchesText(s, text))
+                    continue;
                 hits.Add(s);
             }
             return hits;
+        }
+
+        public static bool MatchesText(ShotAsset s, string text)
+        {
+            if (s == null || string.IsNullOrEmpty(text))
+                return true;
+            string name = string.IsNullOrEmpty(s.displayName) ? s.name : s.displayName;
+            if (name != null && name.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (s.Id != null && s.Id.IndexOf(text, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            return HasTag(s.tags, text);
+        }
+
+        public static bool HasTag(string[] tags, string needle)
+        {
+            if (tags == null || string.IsNullOrEmpty(needle))
+                return false;
+            for (int i = 0; i < tags.Length; i++)
+            {
+                string t = tags[i];
+                if (!string.IsNullOrEmpty(t) && t.IndexOf(needle, StringComparison.OrdinalIgnoreCase) >= 0)
+                    return true;
+            }
+            return false;
+        }
+
+        public static string FormatTags(string[] tags)
+        {
+            if (tags == null || tags.Length == 0)
+                return string.Empty;
+            var parts = new List<string>(tags.Length);
+            for (int i = 0; i < tags.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(tags[i]))
+                    parts.Add(tags[i]);
+            }
+            return parts.Count == 0 ? string.Empty : string.Join(" · ", parts.ToArray());
         }
 
         public static ShotAsset Create(string folder, string fileName, RigKind kind)

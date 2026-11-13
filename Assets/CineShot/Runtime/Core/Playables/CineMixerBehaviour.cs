@@ -5,8 +5,31 @@ namespace CineShot.Core
 {
     public class CineMixerBehaviour : PlayableBehaviour
     {
+        struct SolvedClip
+        {
+            public CineShotClip Clip;
+            public ShotAsset Shot;
+            public CameraPose Pose;
+            public double Local;
+            public double Start;
+            public double Duration;
+            public FocusMode FocusMode;
+            public float FocusHint;
+            public FocusSettings FocusSettings;
+            public Transform FocusTarget;
+            public TargetSample LookAt;
+            public TargetSample Follow;
+            public HandheldLayer Handheld;
+            public int Priority;
+        }
+
+        readonly SolvedClip[] m_Solved = new SolvedClip[16];
         CameraPose m_PrevPose;
         bool m_HasPrev;
+        CineShotClip m_LatchedClip;
+        CameraPose m_LatchPose;
+        bool m_HasLatch;
+        double m_HeldOverlap;
 
         public override void ProcessFrame(Playable playable, FrameData info, object playerData)
         {
@@ -14,25 +37,17 @@ namespace CineShot.Core
             if (rig == null)
                 return;
 
+            CinePerfProbe.BeginSolve();
             float dt = info.deltaTime;
+            double directorTime = playable.GetTime();
+            var resolver = playable.GetGraph().GetResolver();
             int n = playable.GetInputCount();
-            PoseAccumulator acc = default(PoseAccumulator);
-            float wsum = 0f;
+            int count = 0;
 
-            ShotAsset activeShot = null;
-            FocusMode focusMode = FocusMode.None;
-            float focusHint = 10f;
-            Transform focusTarget = null;
-            HandheldLayer handheldLayer = default(HandheldLayer);
-            bool matchFrame = false;
-            CameraPose matchPose = CameraPose.Identity;
-
-            for (int j = 0; j < n; j++)
+            for (int j = 0; j < n && count < m_Solved.Length; j++)
             {
-                float w = playable.GetInputWeight(j);
-                if (w <= 0f)
+                if (playable.GetInputWeight(j) <= 0f)
                     continue;
-
                 var input = (ScriptPlayable<CineShotBehaviour>)playable.GetInput(j);
                 var beh = input.GetBehaviour();
                 if (beh == null || beh.Clip == null || beh.Clip.shot == null)
@@ -40,56 +55,22 @@ namespace CineShot.Core
 
                 var clip = beh.Clip;
                 var shot = clip.shot;
+                double local = input.GetTime();
                 double dur = input.GetDuration();
-                float local = dur > 0.0 ? (float)(input.GetTime() / dur) : 0f;
-                local = Mathf.Clamp01(local);
-
-                EasingAsset easeIn = clip.easeIn != null ? clip.easeIn : shot.easeIn;
-                EasingAsset easeOut = clip.easeOut != null ? clip.easeOut : shot.easeOut;
-                if ((clip.overrides.mask & ShotOverrideMask.Easing) != 0)
-                {
-                    if (clip.overrides.easeIn != null) easeIn = clip.overrides.easeIn;
-                    if (clip.overrides.easeOut != null) easeOut = clip.overrides.easeOut;
-                }
-
-                float shaped = w;
-                if (clip.blendMode != ShotBlendMode.Cut)
-                {
-                    float edge = 0.25f;
-                    if (local < edge)
-                        shaped *= EasingAsset.EvaluateOrLinear(easeIn, local / edge);
-                    else if (local > 1f - edge)
-                        shaped *= EasingAsset.EvaluateOrLinear(easeOut, (1f - local) / edge);
-                }
-                if (shaped <= 0f)
-                    continue;
 
                 RigParams rigParams;
                 Vector3 composition;
                 float fov, near, far, focusDistance;
                 FocusMode mode;
-                EasingAsset ignoredIn, ignoredOut;
+                FocusSettings focusSettings;
                 clip.overrides.ApplyTo(shot, out rigParams, out composition, out fov, out near, out far,
-                    out mode, out focusDistance, out ignoredIn, out ignoredOut);
+                    out mode, out focusDistance, out focusSettings);
 
-                Transform lookTr = clip.lookAt.Resolve(playable.GetGraph().GetResolver());
-                Transform followTr = clip.follow.Resolve(playable.GetGraph().GetResolver());
-
-                var look = rig.SampleLookAt(lookTr, shot.targetTag, shot.targetBinding.lookAtOffset, dt);
-                var follow = rig.SampleFollow(followTr, shot.targetTag, shot.targetBinding.followOffset, dt);
-
-                var ctx = new ShotContext
-                {
-                    LocalTime = (float)input.GetTime(),
-                    Duration = (float)dur,
-                    DeltaTime = dt,
-                    LookAt = look,
-                    Follow = follow,
-                    CompositionOffset = composition,
-                    Seed = shot.Seed,
-                    Spline = clip.spline
-                };
-
+                Transform lookTr = clip.lookAt.Resolve(resolver);
+                Transform followTr = clip.follow.Resolve(resolver);
+                var look = rig.SampleLookAt(lookTr, clip.overrides.ResolveLookOffset(shot), dt);
+                var follow = rig.SampleFollow(followTr, clip.overrides.ResolveFollowOffset(shot), dt);
+                var ctx = clip.BuildContext((float)local, (float)dur, in look, in follow, composition);
                 var pose = CameraPose.Identity;
                 pose.Fov = fov;
                 pose.NearClip = near;
@@ -97,60 +78,112 @@ namespace CineShot.Core
                 pose.FocusDistance = focusDistance;
                 SolverDispatch.Solve(shot.rigKind, in ctx, in rigParams, ref pose);
 
-                if (clip.blendMode == ShotBlendMode.MatchFrame && shot.matchPoint.valid && local < 0.02f)
+                m_Solved[count++] = new SolvedClip
                 {
-                    matchFrame = true;
-                    matchPose.Position = shot.matchPoint.position;
-                    matchPose.Rotation = shot.matchPoint.rotation;
-                    matchPose.Fov = shot.matchPoint.fov > 1f ? shot.matchPoint.fov : pose.Fov;
-                    matchPose.NearClip = pose.NearClip;
-                    matchPose.FarClip = pose.FarClip;
-                    matchPose.FocusDistance = pose.FocusDistance;
-                }
-
-                acc.Add(in pose, shaped);
-                wsum += shaped;
-
-                if (shaped >= wsum * 0.5f || activeShot == null)
-                {
-                    activeShot = shot;
-                    focusMode = mode;
-                    focusHint = focusDistance;
-                    focusTarget = lookTr != null ? lookTr : followTr;
-                    handheldLayer = shot.handheld;
-                }
+                    Clip = clip,
+                    Shot = shot,
+                    Pose = pose,
+                    Local = local,
+                    Start = directorTime - local,
+                    Duration = dur,
+                    FocusMode = mode,
+                    FocusHint = focusDistance,
+                    FocusSettings = focusSettings,
+                    FocusTarget = lookTr != null ? lookTr : followTr,
+                    LookAt = look,
+                    Follow = follow,
+                    Handheld = clip.overrides.ResolveHandheld(shot),
+                    Priority = clip.overrides.ResolvePriority(shot)
+                };
             }
 
-            if (wsum <= 0f)
+            if (count == 0)
             {
-                rig.ReleasePose(dt);
+                rig.SetActiveShot(null);
+                CinePerfProbe.EndSolve();
                 return;
             }
 
-            CameraPose blended;
-            if (!acc.TryBuild(out blended))
+            int current = 0;
+            for (int i = 1; i < count; i++)
             {
-                rig.ReleasePose(dt);
-                return;
+                if (ShotBlend.CompareActive(m_Solved[i].Start, m_Solved[i].Priority,
+                        m_Solved[current].Start, m_Solved[current].Priority) > 0)
+                    current = i;
+            }
+            int previous = -1;
+            for (int i = 0; i < count; i++)
+            {
+                if (i == current)
+                    continue;
+                if (previous < 0
+                    || ShotBlend.CompareActive(m_Solved[i].Start, m_Solved[i].Priority,
+                        m_Solved[previous].Start, m_Solved[previous].Priority) > 0)
+                    previous = i;
             }
 
-            if (matchFrame && m_HasPrev)
+            SolvedClip active = m_Solved[current];
+            if (active.Clip != m_LatchedClip)
             {
-                blended.Position = matchPose.Position;
-                blended.Rotation = matchPose.Rotation;
-                blended.Fov = matchPose.Fov;
+                // 无重叠的混合从上一帧最终位姿出发
+                m_LatchPose = m_PrevPose;
+                m_HasLatch = m_HasPrev;
+                m_LatchedClip = active.Clip;
+                m_HeldOverlap = 0d;
             }
 
-            if (handheldLayer.enabled)
-                HandheldSolver.SolveStatic(
-                    new ShotContext { LocalTime = (float)playable.GetTime(), Seed = activeShot != null ? activeShot.Seed : 0 },
-                    in handheldLayer.parameters,
-                    ref blended);
+            double overlap = 0d;
+            if (previous >= 0)
+            {
+                overlap = (m_Solved[previous].Start + m_Solved[previous].Duration) - active.Start;
+                if (overlap > 0.01d)
+                    m_HeldOverlap = overlap;
+            }
+            else
+                overlap = m_HeldOverlap;
 
-            Transform focusTr = focusTarget;
-            rig.SubmitPose(in blended, dt, focusHint, focusMode, focusTr);
+            bool hasFrom = previous >= 0 || m_HasLatch;
+            CameraPose from = previous >= 0 ? m_Solved[previous].Pose : m_LatchPose;
+            EasingAsset curve = ShotBlend.BlendCurve(active.Clip, previous >= 0 ? m_Solved[previous].Clip : null);
+            CameraPose blended = ShotBlend.Apply(active.Clip.blendMode, active.Clip.blendDuration, overlap, active.Local, hasFrom, in from, in active.Pose, curve);
+            blended = ShotBlend.ApplyMatch(active.Clip.blendMode, active.Shot.matchPoint, active.Local, in blended);
+
+            var aimCtx = new ShotContext
+            {
+                LocalTime = (float)directorTime,
+                Seed = active.Shot.Seed,
+                LookAt = active.LookAt,
+                Follow = active.Follow
+            };
+            if (active.Handheld.enabled)
+                HandheldSolver.ApplyLayer(in aimCtx, in active.Handheld.parameters, ref blended);
+
+            FocusSettings blendedFocus = active.FocusSettings;
+            float focusHint = active.FocusHint;
+            FocusMode focusMode = active.FocusMode;
+            Transform focusTarget = active.FocusTarget;
+            if (active.Clip.blendMode == ShotBlendMode.Blend && previous >= 0)
+            {
+                var prev = m_Solved[previous];
+                float u = ShotBlend.Factor(ShotBlend.Window(overlap, active.Clip.blendDuration), active.Local, curve);
+                blendedFocus = ShotBlend.LerpSettings(in prev.FocusSettings, in active.FocusSettings, u);
+                if (prev.FocusMode == FocusMode.FixedDistance && focusMode == FocusMode.FixedDistance)
+                    focusHint = Mathf.Lerp(prev.FocusHint, active.FocusHint, u);
+                else if (u < 0.5f)
+                {
+                    focusMode = prev.FocusMode;
+                    focusHint = prev.FocusHint;
+                    focusTarget = prev.FocusTarget;
+                }
+            }
+
+            Vector3 aimPoint = SolverMath.AimPoint(in aimCtx, blended.Position);
+            bool hasAim = active.LookAt.Valid || active.Follow.Valid;
+            rig.SetActiveShot(active.Shot);
+            rig.SubmitPose(in blended, dt, focusHint, focusMode, focusTarget, in blendedFocus, aimPoint, hasAim);
             m_PrevPose = blended;
             m_HasPrev = true;
+            CinePerfProbe.EndSolve();
         }
     }
 }

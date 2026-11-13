@@ -11,22 +11,18 @@ namespace CineShot.Core
         bool m_Pulling;
         int m_LastSource = int.MinValue;
 
-        public FocusState State { get { return m_State; } }
-
         public void Reset(float distance)
         {
             m_State.Distance = Mathf.Max(0.1f, distance);
-            m_State.Velocity = 0f;
-            m_State.Pulling = false;
             m_Pulling = false;
             m_LastSource = int.MinValue;
         }
 
-        public FocusState Evaluate(FocusRequest[] requests, int count, float baseDistance, float dt, FocusProfile profile)
+        public FocusState Evaluate(FocusRequest[] requests, int count, float baseDistance, float dt, in FocusSettings settings)
         {
-            float damping = profile != null ? Mathf.Max(0.01f, profile.damping) : 6f;
-            float maxSpeed = profile != null ? Mathf.Max(0.01f, profile.maxFocusSpeed) : 20f;
-            float pullDur = profile != null ? Mathf.Max(0.01f, profile.pullDuration) : 0.5f;
+            float damping = Mathf.Max(0.01f, settings.damping);
+            float maxSpeed = Mathf.Max(0.01f, settings.maxFocusSpeed);
+            float pullDur = Mathf.Max(0.01f, settings.pullDuration);
 
             float wSum = 0f;
             float logSum = 0f;
@@ -88,10 +84,7 @@ namespace CineShot.Core
             float damped = Mathf.Lerp(m_State.Distance, target, alpha);
             float maxDelta = maxSpeed * dt;
             float delta = Mathf.Clamp(damped - m_State.Distance, -maxDelta, maxDelta);
-            float next = Mathf.Max(0.1f, m_State.Distance + delta);
-            m_State.Velocity = dt > 1e-5f ? (next - m_State.Distance) / dt : 0f;
-            m_State.Distance = next;
-            m_State.Pulling = m_Pulling;
+            m_State.Distance = Mathf.Max(0.1f, m_State.Distance + delta);
             return m_State;
         }
     }

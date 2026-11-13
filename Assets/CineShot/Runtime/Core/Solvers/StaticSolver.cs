@@ -2,78 +2,75 @@ using UnityEngine;
 
 namespace CineShot.Core
 {
-    public struct StaticSolver : ISolver
+    public static class StaticSolver
     {
-        public void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
-        {
-            SolveStatic(in ctx, in p, ref pose);
-        }
-
-        public static void SolveStatic(in ShotContext ctx, in RigParams p, ref CameraPose pose)
+        public static void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
         {
             Vector3 anchor = SolverMath.Anchor(in ctx);
             Quaternion anchorRot = ctx.Follow.Valid ? ctx.Follow.Rotation : Quaternion.identity;
             pose.Position = anchor + anchorRot * p.A;
-            SolverMath.LookAtTarget(in ctx, ref pose, p.P0, p.P1);
-            SolverMath.ApplyComposition(ref pose, ctx.CompositionOffset);
+            SolverMath.AimWithComposition(in ctx, ref pose, p.P0, p.P1);
         }
     }
 
-    public struct DollyTrackSolver : ISolver
+    public static class DollyTrackSolver
     {
-        public void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
-        {
-            SolveStatic(in ctx, in p, ref pose);
-        }
-
-        public static void SolveStatic(in ShotContext ctx, in RigParams p, ref CameraPose pose)
+        public static void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
         {
             float u = SolverMath.NormalizedTime(in ctx);
             float eased = u * u * (3f - 2f * u);
-            Vector3 onTrack = Vector3.Lerp(p.A, p.B, eased);
-            Vector3 lateral = Vector3.Cross(Vector3.up, (p.B - p.A).normalized);
-            if (lateral.sqrMagnitude < 1e-6f)
-                lateral = Vector3.right;
-            pose.Position = onTrack + lateral * p.P1 + Vector3.up * (p.P2 - onTrack.y);
-            TargetSample look = ctx.LookAt;
-            if (look.Valid && p.P0 > 0f)
+            pose.Position = PointOnTrack(in p, eased);
+            TargetSample look = ctx.LookAt.Valid ? ctx.LookAt : ctx.Follow;
+            if (SolverMath.ShouldPredict(in look, p.P0))
                 look.Position = SolverMath.Predict(in look, p.P0);
             var lookCtx = ctx;
             lookCtx.LookAt = look;
-            SolverMath.LookAtTarget(in lookCtx, ref pose, 0f, 0f);
+            lookCtx.Follow = default(TargetSample);
+            SolverMath.AimWithComposition(in lookCtx, ref pose, 0f, 0f);
             pose.Dutch = p.P3;
-            SolverMath.ApplyComposition(ref pose, ctx.CompositionOffset);
+        }
+
+        public static void TrackFrame(Vector3 a, Vector3 b, out Vector3 along, out Vector3 side, out Vector3 up)
+        {
+            Vector3 delta = b - a;
+            along = delta.sqrMagnitude > 1e-6f ? delta.normalized : Vector3.forward;
+            side = Vector3.Cross(Vector3.up, along);
+            if (side.sqrMagnitude < 1e-6f)
+                side = Vector3.Cross(Vector3.forward, along);
+            side.Normalize();
+            up = Vector3.Cross(along, side);
+            if (up.sqrMagnitude < 1e-6f)
+                up = Vector3.up;
+            else
+                up.Normalize();
+        }
+
+        public static Vector3 PointOnTrack(in RigParams p, float eased)
+        {
+            Vector3 along, side, up;
+            TrackFrame(p.A, p.B, out along, out side, out up);
+            Vector3 onTrack = Vector3.Lerp(p.A, p.B, Mathf.Clamp01(eased));
+            return onTrack + side * p.P1 + up * p.P2;
         }
     }
 
-    public struct OrbitSolver : ISolver
+    public static class OrbitSolver
     {
-        public void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
+        public static void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
         {
-            SolveStatic(in ctx, in p, ref pose);
-        }
-
-        public static void SolveStatic(in ShotContext ctx, in RigParams p, ref CameraPose pose)
-        {
-            Vector3 c = SolverMath.Anchor(in ctx);
+            Vector3 c = ctx.Follow.Valid ? ctx.Follow.Position : p.B;
             float ang = (p.P0 + p.P1 * ctx.LocalTime) * Mathf.Deg2Rad;
             Vector3 dir = new Vector3(Mathf.Sin(ang), 0f, Mathf.Cos(ang));
             pose.Position = c + dir * p.P2 + Vector3.up * p.P3;
-            SolverMath.LookAtTarget(in ctx, ref pose, 0f, 0f);
+            SolverMath.AimWithComposition(in ctx, ref pose, 0f, 0f);
             float u = SolverMath.NormalizedTime(in ctx);
             pose.Fov = Mathf.Lerp(pose.Fov, p.A.x > 1f ? p.A.x : pose.Fov, u * 0.5f);
-            SolverMath.ApplyComposition(ref pose, ctx.CompositionOffset);
         }
     }
 
-    public struct PushPullSolver : ISolver
+    public static class PushPullSolver
     {
-        public void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
-        {
-            SolveStatic(in ctx, in p, ref pose);
-        }
-
-        public static void SolveStatic(in ShotContext ctx, in RigParams p, ref CameraPose pose)
+        public static void Solve(in ShotContext ctx, in RigParams p, ref CameraPose pose)
         {
             Vector3 anchor = SolverMath.Anchor(in ctx);
             float u = SolverMath.NormalizedTime(in ctx);
@@ -84,14 +81,13 @@ namespace CineShot.Core
             if (back.sqrMagnitude < 1e-6f)
                 back = Vector3.back;
             pose.Position = anchor + back.normalized * dist + Vector3.up * p.P2;
-            SolverMath.LookAtTarget(in ctx, ref pose, 0f, 0f);
+            SolverMath.AimWithComposition(in ctx, ref pose, 0f, 0f);
             if (p.P3 > 0.5f && p.A.x > 1f)
             {
                 float startFov = pose.Fov;
                 float endFov = p.A.x;
                 pose.Fov = Mathf.Lerp(startFov, endFov, u);
             }
-            SolverMath.ApplyComposition(ref pose, ctx.CompositionOffset);
         }
     }
 }

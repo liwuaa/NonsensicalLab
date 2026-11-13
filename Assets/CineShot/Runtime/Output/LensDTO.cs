@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace CineShot.Output
 {
     public struct LensDTO
@@ -8,13 +10,13 @@ namespace CineShot.Output
         public float Dutch;
     }
 
+    /// <summary>屏蔽 CM2 / CM3 虚拟相机 API 差异。</summary>
     public interface ILensWriter
     {
         bool IsValid { get; }
         int Priority { get; set; }
-        UnityEngine.Transform Transform { get; }
-        bool SetPose(UnityEngine.Vector3 position, UnityEngine.Quaternion rotation);
-        bool SetLens(in LensDTO lens);
+        void SetPose(Vector3 position, Quaternion rotation);
+        void SetLens(in LensDTO lens);
         void SetEnabled(bool enabled);
     }
 }

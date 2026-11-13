@@ -1,11 +1,13 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CineShot.Compat
 {
+    /// <summary>同一条兼容性警告只打一次（编辑器内按会话记忆）。</summary>
     public static class WarnOnce
     {
-        static readonly HashSet<string> s_Runtime = new HashSet<string>();
+#if !UNITY_EDITOR
+        static readonly System.Collections.Generic.HashSet<string> s_Runtime = new System.Collections.Generic.HashSet<string>();
+#endif
 
         public static void Log(string id, string message)
         {
@@ -21,11 +23,6 @@ namespace CineShot.Compat
                 return;
 #endif
             Debug.LogWarning(message);
-        }
-
-        public static void ResetRuntime()
-        {
-            s_Runtime.Clear();
         }
     }
 }

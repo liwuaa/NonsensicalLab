@@ -27,8 +27,8 @@ namespace CineShot.Editor
         public int Orphan;
         public override string ToString()
         {
-            return "Created " + Created + " / Updated " + Updated + " / Remapped " + Remapped
-                   + " / Conflict " + Conflict + " / Clean " + Clean + " / Orphan " + Orphan;
+            return "新建 " + Created + " / 更新 " + Updated + " / 重新匹配 " + Remapped
+                   + " / 冲突 " + Conflict + " / 未变 " + Clean + " / 多余片段 " + Orphan;
         }
     }
 
@@ -39,14 +39,14 @@ namespace CineShot.Editor
             var report = new ReconcileReport();
             if (director == null || sequence == null)
             {
-                EditorUtility.DisplayDialog("CineShot", "需要 PlayableDirector 与 CineSequenceAsset。", "OK");
+                EditorUtility.DisplayDialog("CineShot", "需要 PlayableDirector 与 CineSequenceAsset。", "确定");
                 return report;
             }
 
             var timeline = director.playableAsset as TimelineAsset;
             if (timeline == null)
             {
-                EditorUtility.DisplayDialog("CineShot", "PlayableDirector 未绑定 TimelineAsset。", "OK");
+                EditorUtility.DisplayDialog("CineShot", "PlayableDirector 未绑定 TimelineAsset。", "确定");
                 return report;
             }
 
@@ -113,7 +113,7 @@ namespace CineShot.Editor
                         report.Remapped++;
                 }
 
-                var shot = FindShotByGuid(row.shotGuid);
+                var shot = ShotLibrary.FindById(row.shotGuid);
                 if (clip == null)
                 {
                     clip = track.CreateDefaultClip();
@@ -186,6 +186,7 @@ namespace CineShot.Editor
                 cineClip.matchKey = key;
                 cineClip.sourceHash = hash;
                 cineClip.blendMode = row.blendMode;
+                cineClip.blendDuration = ShotBlend.ResolveDuration(row.blendDuration);
                 cineClip.lastAppliedDuration = duration;
                 clip.start = cursor;
                 clip.duration = duration;
@@ -206,7 +207,7 @@ namespace CineShot.Editor
             EditorUtility.SetDirty(timeline);
             AssetDatabase.SaveAssets();
             Undo.CollapseUndoOperations(group);
-            Debug.Log("[CineShot] Lay Out Tracks: " + report);
+            Debug.Log("[CineShot] 分镜铺轨：" + report);
             return report;
         }
 
@@ -235,7 +236,7 @@ namespace CineShot.Editor
 
         static string HashRow(StoryboardRow row)
         {
-            string raw = row.shotGuid + "|" + row.duration + "|" + row.gap + "|" + row.blendMode + "|" + row.blendIn + "|" + row.blendOut;
+            string raw = row.shotGuid + "|" + row.duration + "|" + row.gap + "|" + row.blendMode + "|" + row.blendDuration;
             using (var md5 = MD5.Create())
             {
                 byte[] bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(raw));
@@ -249,17 +250,6 @@ namespace CineShot.Editor
         static double Quantize(double v, float fps)
         {
             return Math.Round(v * fps) / fps;
-        }
-
-        static ShotAsset FindShotByGuid(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-                return null;
-            var all = ShotLibrary.All;
-            for (int i = 0; i < all.Count; i++)
-                if (all[i].Id == id)
-                    return all[i];
-            return null;
         }
     }
 }

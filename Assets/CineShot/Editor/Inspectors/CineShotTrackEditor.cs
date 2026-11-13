@@ -11,23 +11,22 @@ namespace CineShot.Editor
     {
         public override void OnInspectorGUI()
         {
+            EditorGUI.LabelField(CineHelp.Line(CineTips.Track), "CineShot 轨道", EditorStyles.boldLabel);
             DrawDefaultInspector();
             var track = (CineShotTrack)target;
-            EditorGUILayout.Space();
-            if (GUILayout.Button("Open Storyboard"))
+            EditorGUILayout.Space(4f);
+            if (GUILayout.Button("打开分镜表"))
                 StoryboardWindow.Open();
-            if (GUILayout.Button("Lay Out Tracks"))
+            if (GUILayout.Button("按分镜表铺轨"))
             {
                 var director = FindDirector(track);
                 var seq = FindSequence();
                 if (director != null && seq != null)
                     ShotTrackLayer.Reconcile(director, seq, ConflictPolicy.Ask);
                 else
-                    EditorUtility.DisplayDialog("CineShot", "需要场景中的 PlayableDirector 与 CineSequenceAsset。", "OK");
+                    EditorUtility.DisplayDialog("CineShot", "需要场景中的 PlayableDirector 与 CineSequenceAsset。", "确定");
             }
-            if (GUILayout.Button("Bake Thumbs"))
-                ShotThumbnailBaker.RebakeAll();
-            if (GUILayout.Button("Validate Bindings"))
+            if (GUILayout.Button("校验镜头引用"))
                 Validate(track);
         }
 
@@ -62,7 +61,7 @@ namespace CineShot.Editor
                 if (asset == null || asset.shot == null)
                     missing++;
             }
-            EditorUtility.DisplayDialog("CineShot", "Missing shot refs: " + missing, "OK");
+            EditorUtility.DisplayDialog("CineShot", missing == 0 ? "所有片段都指定了镜头资产。" : "未指定镜头资产的片段：" + missing + " 条（这些片段播放时会被跳过）。", "确定");
         }
     }
 }
